@@ -5,6 +5,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam 正版快速安装</title>
+
+    <!-- ===== 第一道防火墙：内容安全策略 (CSP) ===== -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: https:;
+        font-src 'self' data:;
+        connect-src 'self';
+        frame-src 'none';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
+
+    <!-- ===== 第二道防火墙：防点击劫持 ===== -->
+    <style id="anti-frame-style">
+        html{display:none!important}
+    </style>
+    <script>
+        if(self===top){document.getElementById('anti-frame-style').remove()}else{top.location=self.location}
+    </script>
+
+    <!-- ===== 第三道防火墙：DOM 篡改检测 ===== -->
+    <script>
+    (function(){
+        "use strict";
+        var tamperCount=0;
+        var observer=new MutationObserver(function(mutations){
+            mutations.forEach(function(m){
+                if(m.type==='childList'){
+                    m.addedNodes.forEach(function(node){
+                        if(node.nodeType===1){
+                            var tag=node.tagName.toLowerCase();
+                            if(tag==='script'||tag==='iframe'||tag==='object'||tag==='embed'){
+                                node.remove();
+                                tamperCount++;
+                                console.warn('[安全防护] 已拦截 '+tag+' 注入，累计 '+tamperCount+' 次');
+                            }
+                        }
+                    });
+                }
+            });
+        });
+        document.addEventListener('DOMContentLoaded',function(){
+            observer.observe(document.documentElement,{childList:true,subtree:true});
+            document.querySelectorAll('script[src]').forEach(function(s){
+                if(!s.src.startsWith(location.origin)&&!s.src.startsWith('https://cdn.cloudflare.steamstatic.com')){
+                    s.remove();
+                    console.warn('[安全防护] 已移除外源脚本: '+s.src);
+                }
+            });
+        });
+    })();
+    </script>
+
     <style>
         :root {
             --bg-primary: #1b2838;
