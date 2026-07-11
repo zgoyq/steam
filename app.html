@@ -1,526 +1,566 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Steam 启航</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0a0e17">
-    <link rel="manifest" href="manifest.json">
-    <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Steam 启航</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#080c18">
+<style>
+/* ============ RESET & BASE ============ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080c18;
+  --text-primary:#f0f2f5;
+  --text-secondary:rgba(255,255,255,.42);
+  --text-tertiary:rgba(255,255,255,.18);
+  --blue:#3b82f6;
+  --green:#10b981;
+  --red:#ef4444;
+  --amber:#f59e0b;
+  --radius-xl:28px;
+  --radius-lg:20px;
+  --radius-md:14px;
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --ease-out-expo:cubic-bezier(.16,1,.3,1);
+  --ease-in-out:cubic-bezier(.65,0,.35,1);
+}
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  background:var(--bg);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','PingFang SC','Inter',system-ui,sans-serif;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-font-smoothing:antialiased;
+  user-select:none;-webkit-user-select:none;
+  color:var(--text-primary);
+}
 
-        :root {
-            --bg-deep: #060b14;
-            --bg-card: rgba(14, 20, 35, 0.7);
-            --border-subtle: rgba(255,255,255,0.06);
-            --text-primary: #e8edf5;
-            --text-secondary: rgba(255,255,255,0.4);
-            --text-tertiary: rgba(255,255,255,0.2);
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.25);
-            --gold: #c9a455;
-            --gold-glow: rgba(201, 164, 85, 0.3);
-            --success: #22c55e;
-            --success-glow: rgba(34, 197, 94, 0.3);
-            --danger: #ef4444;
-            --radius-lg: 24px;
-            --radius-md: 16px;
-            --radius-sm: 12px;
-        }
+/* ============ CANVAS PARTICLES ============ */
+#particles{
+  position:fixed;inset:0;z-index:0;
+  pointer-events:none;
+  opacity:.6;
+}
 
-        html, body {
-            width: 100%; height: 100%; overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Inter', sans-serif;
-            background: var(--bg-deep);
-            -webkit-tap-highlight-color: transparent;
-            user-select: none; -webkit-user-select: none;
-            color: var(--text-primary);
-        }
+/* ============ AURORA ORBS ============ */
+.aurora{
+  position:fixed;border-radius:50%;filter:blur(80px);
+  pointer-events:none;z-index:0;
+  will-change:transform;
+}
+.aurora-1{
+  width:320px;height:320px;
+  background:radial-gradient(circle,rgba(59,130,246,.18),transparent 70%);
+  top:-10%;left:-15%;
+  animation:float1 12s ease-in-out infinite;
+}
+.aurora-2{
+  width:280px;height:280px;
+  background:radial-gradient(circle,rgba(139,92,246,.14),transparent 70%);
+  bottom:-15%;right:-10%;
+  animation:float2 14s ease-in-out infinite;
+}
+.aurora-3{
+  width:240px;height:240px;
+  background:radial-gradient(circle,rgba(6,182,212,.10),transparent 70%);
+  top:40%;left:50%;
+  animation:float3 16s ease-in-out infinite;
+}
+@keyframes float1{
+  0%,100%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(60px,40px) scale(1.15)}
+  66%{transform:translate(20px,-30px) scale(.9)}
+}
+@keyframes float2{
+  0%,100%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(-50px,-30px) scale(1.1)}
+  66%{transform:translate(-20px,50px) scale(.85)}
+}
+@keyframes float3{
+  0%,100%{transform:translate(-50%,-50%) scale(1)}
+  50%{transform:translate(-50%,-50%) translate(30px,-20px) scale(1.2)}
+}
 
-        /* Animated gradient background */
-        body::before {
-            content: '';
-            position: fixed; inset: 0;
-            background:
-                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(59,130,246,0.08) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 80% at 80% 90%, rgba(201,164,85,0.06) 0%, transparent 50%),
-                radial-gradient(ellipse 50% 50% at 50% 40%, rgba(59,130,246,0.04) 0%, transparent 50%);
-            z-index: 0;
-            animation: bgPulse 8s ease-in-out infinite alternate;
-        }
-        @keyframes bgPulse {
-            0% { opacity: 0.8; }
-            100% { opacity: 1; }
-        }
+/* ============ GRAIN OVERLAY ============ */
+.grain{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:256px 256px;
+}
 
-        /* Subtle grid pattern */
-        body::after {
-            content: '';
-            position: fixed; inset: 0;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: 0;
-            pointer-events: none;
-        }
+/* ============ MAIN LAYOUT ============ */
+.app{
+  position:relative;z-index:2;
+  width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;
+  padding:32px 22px;
+}
 
-        .app {
-            position: relative; z-index: 1;
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center;
-            padding: 28px 20px;
-        }
+/* ============ LOGO ============ */
+.logo-wrap{
+  position:relative;margin-bottom:22px;
+}
+.logo-ring-outer{
+  width:88px;height:88px;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,rgba(59,130,246,.12),rgba(37,99,235,.04));
+  border:1px solid rgba(59,130,246,.18);
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  position:relative;
+}
+.logo-ring-outer::after{
+  content:'';position:absolute;inset:-4px;border-radius:50%;
+  border:1px solid rgba(99,143,241,.06);
+  animation:logoSpin 14s linear infinite;
+}
+@keyframes logoSpin{to{transform:rotate(360deg)}}
+.logo-glow-pulse{
+  position:absolute;width:64px;height:64px;border-radius:50%;
+  background:radial-gradient(circle,rgba(59,130,246,.18),transparent);
+  filter:blur(18px);
+  animation:glowBreathe 3s var(--ease-in-out) infinite;
+}
+@keyframes glowBreathe{
+  0%,100%{transform:scale(1);opacity:.5}
+  50%{transform:scale(1.35);opacity:.25}
+}
+.logo-svg{width:44px;height:44px;position:relative;z-index:1;filter:drop-shadow(0 0 12px rgba(59,130,246,.35))}
+.logo-svg svg{width:100%;height:100%}
 
-        /* Logo area */
-        .logo-area {
-            position: relative;
-            margin-bottom: 20px;
-        }
-        .logo-ring {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(37,99,235,0.1));
-            border: 1.5px solid rgba(59,130,246,0.3);
-            display: flex; align-items: center; justify-content: center;
-            position: relative;
-        }
-        .logo-ring::after {
-            content: '';
-            position: absolute; inset: -6px;
-            border-radius: 50%;
-            border: 1px solid rgba(59,130,246,0.08);
-            animation: logoOrbit 12s linear infinite;
-        }
-        @keyframes logoOrbit {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .logo-icon {
-            width: 42px; height: 42px;
-            opacity: 0.95;
-            filter: drop-shadow(0 0 12px rgba(59,130,246,0.4));
-        }
-        .logo-glow {
-            position: absolute;
-            width: 60px; height: 60px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(59,130,246,0.15), transparent);
-            filter: blur(16px);
-            animation: glowPulse 3s ease-in-out infinite;
-        }
-        @keyframes glowPulse {
-            0%, 100% { transform: scale(1); opacity: 0.6; }
-            50% { transform: scale(1.3); opacity: 0.3; }
-        }
+.app-name{
+  font-size:1.2rem;font-weight:700;letter-spacing:6px;
+  background:linear-gradient(180deg,#f0f2f5 0%,rgba(240,242,245,.55) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:3px;
+}
+.app-tag{
+  font-size:.6rem;font-weight:500;letter-spacing:10px;
+  color:rgba(255,255,255,.14);text-transform:uppercase;
+  margin-bottom:40px;
+}
 
-        .app-title {
-            font-size: 1.25rem; font-weight: 700;
-            letter-spacing: 5px;
-            margin-bottom: 2px;
-            background: linear-gradient(180deg, #e8edf5 0%, rgba(232,237,245,0.6) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .app-subtitle {
-            font-size: 0.65rem; font-weight: 500;
-            letter-spacing: 8px;
-            color: rgba(255,255,255,0.18);
-            margin-bottom: 36px;
-            text-transform: uppercase;
-        }
+/* ============ LIQUID GLASS CARD ============ */
+.card{
+  width:100%;max-width:370px;
+  background:rgba(255,255,255,.025);
+  backdrop-filter:blur(50px) saturate(200%);
+  -webkit-backdrop-filter:blur(50px) saturate(200%);
+  border-radius:var(--radius-xl);
+  padding:34px 26px 30px;
+  position:relative;overflow:hidden;
+  box-shadow:
+    0 24px 64px rgba(0,0,0,.45),
+    0 4px 16px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.04);
+  transition:box-shadow .6s var(--ease-out-expo);
+}
+/* Iridescent border */
+.card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
+  background:linear-gradient(160deg,
+    rgba(255,255,255,.12) 0%,
+    rgba(255,255,255,.02) 25%,
+    rgba(99,143,241,.08) 50%,
+    rgba(255,255,255,.01) 75%,
+    rgba(255,255,255,.08) 100%
+  );
+  -webkit-mask:linear-gradient(#fff,#fff) content-box,linear-gradient(#fff,#fff);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  pointer-events:none;
+}
+/* Top highlight line */
+.card::after{
+  content:'';position:absolute;top:0;left:18%;right:18%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);
+  border-radius:1px;
+}
 
-        /* Status indicator dot */
-        .status-dot {
-            display: inline-block;
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            margin-right: 8px;
-            vertical-align: middle;
-            position: relative;
-        }
-        .status-dot.online {
-            background: var(--success);
-            box-shadow: 0 0 8px var(--success-glow), 0 0 20px var(--success-glow);
-            animation: dotPulse 2s ease-in-out infinite;
-        }
-        .status-dot.connecting {
-            background: #eab308;
-            box-shadow: 0 0 8px rgba(234,179,8,0.4);
-            animation: dotFlash 0.8s ease-in-out infinite;
-        }
-        .status-dot.offline {
-            background: var(--danger);
-            box-shadow: 0 0 6px rgba(239,68,68,0.3);
-        }
-        @keyframes dotPulse {
-            0%, 100% { box-shadow: 0 0 8px var(--success-glow), 0 0 20px var(--success-glow); }
-            50% { box-shadow: 0 0 4px var(--success-glow), 0 0 10px var(--success-glow); }
-        }
-        @keyframes dotFlash {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
+/* ============ SCREENS ============ */
+.screen{display:none;width:100%}
+.screen.active{display:block}
+.screen-label{
+  font-size:.65rem;font-weight:500;letter-spacing:4px;
+  color:var(--text-tertiary);text-transform:uppercase;
+  text-align:center;margin-bottom:18px;
+}
+.status-line{
+  text-align:center;font-size:.88rem;color:var(--text-secondary);
+  margin:14px 0;min-height:26px;line-height:1.5;
+  font-weight:450;transition:color .4s var(--ease-out-expo);
+}
 
-        /* Card */
-        .card {
-            width: 100%; max-width: 360px;
-            background: var(--bg-card);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 32px 24px 28px;
-            box-shadow:
-                0 8px 32px rgba(0,0,0,0.4),
-                0 1px 0 rgba(255,255,255,0.04) inset;
-            position: relative;
-            overflow: hidden;
-        }
-        .card::before {
-            content: '';
-            position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
-        }
-        .card::after {
-            content: '';
-            position: absolute; bottom: -40px; right: -40px;
-            width: 120px; height: 120px;
-            border-radius: 50%;
-            border: 1px solid rgba(59,130,246,0.04);
-            pointer-events: none;
-        }
+/* Status dot */
+.dot{
+  display:inline-block;width:9px;height:9px;border-radius:50%;
+  vertical-align:middle;margin-right:8px;position:relative;
+  flex-shrink:0;
+}
+.dot.online{
+  background:var(--green);
+  box-shadow:0 0 10px rgba(16,185,129,.45),0 0 24px rgba(16,185,129,.2);
+  animation:dotPulse 2.5s var(--ease-in-out) infinite;
+}
+.dot.connecting{
+  background:var(--amber);
+  box-shadow:0 0 10px rgba(245,158,11,.45);
+  animation:dotFlash .9s var(--ease-in-out) infinite;
+}
+.dot.offline{
+  background:var(--red);
+  box-shadow:0 0 8px rgba(239,68,68,.35);
+}
+@keyframes dotPulse{
+  0%,100%{box-shadow:0 0 10px rgba(16,185,129,.45),0 0 24px rgba(16,185,129,.2)}
+  50%{box-shadow:0 0 6px rgba(16,185,129,.3),0 0 14px rgba(16,185,129,.1)}
+}
+@keyframes dotFlash{0%,100%{opacity:1}50%{opacity:.25}}
 
-        .screen-label {
-            font-size: 0.7rem; font-weight: 500;
-            color: var(--text-tertiary);
-            letter-spacing: 3px; text-transform: uppercase;
-            margin-bottom: 20px; text-align: center;
-        }
+/* Icon centerpiece */
+.icon-center{
+  width:56px;height:56px;margin:0 auto 18px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  transition:all .5s var(--ease-out-expo);
+}
+.icon-center.wait{
+  background:rgba(59,130,246,.06);
+  border:1px solid rgba(59,130,246,.12);
+  box-shadow:0 0 24px rgba(59,130,246,.08);
+}
+.icon-center.alert{
+  background:rgba(16,185,129,.06);
+  border:1px solid rgba(16,185,129,.15);
+  box-shadow:0 0 28px rgba(16,185,129,.12);
+  animation:iconPop .5s var(--spring);
+}
+@keyframes iconPop{
+  0%{transform:scale(.85)}
+  60%{transform:scale(1.1)}
+  100%{transform:scale(1)}
+}
 
-        .status {
-            text-align: center; font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin: 12px 0; min-height: 24px;
-            line-height: 1.6;
-            transition: color 0.3s, opacity 0.3s;
-            font-weight: 450;
-        }
+/* ============ BUTTONS ============ */
+.btn{
+  width:100%;padding:15px 20px;border:none;border-radius:var(--radius-md);
+  font-size:.92rem;font-weight:600;cursor:pointer;
+  letter-spacing:2px;transition:all .35s var(--ease-out-expo);
+  outline:none;-webkit-tap-highlight-color:transparent;
+  position:relative;overflow:hidden;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+.btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.1),transparent 60%);
+  border-radius:inherit;pointer-events:none;
+}
+.btn:active{transform:scale(.96);transition:transform .15s var(--spring)}
+.btn-primary{
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  color:#fff;
+  box-shadow:0 4px 24px rgba(37,99,235,.35),inset 0 1px 0 rgba(255,255,255,.15);
+}
+.btn-primary:active{
+  box-shadow:0 2px 12px rgba(37,99,235,.25),inset 0 1px 0 rgba(255,255,255,.1);
+}
+.btn-secondary{
+  background:rgba(255,255,255,.04);
+  color:rgba(255,255,255,.4);
+  border:1px solid rgba(255,255,255,.05);
+  margin-top:10px;
+}
+.btn-secondary:active{background:rgba(255,255,255,.07)}
+.btn-reset{
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  color:#fff;margin-top:22px;
+  box-shadow:0 4px 24px rgba(37,99,235,.3),inset 0 1px 0 rgba(255,255,255,.12);
+}
 
-        /* Buttons */
-        .btn {
-            width: 100%; padding: 15px 20px; border: none; border-radius: var(--radius-md);
-            font-size: 0.95rem; font-weight: 600; cursor: pointer;
-            letter-spacing: 3px; transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-            outline: none; -webkit-tap-highlight-color: transparent;
-            position: relative; overflow: hidden;
-        }
-        .btn::after {
-            content: '';
-            position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.08), transparent);
-            border-radius: inherit;
-        }
-        .btn:active { transform: scale(0.96); }
+/* ============ SPINNER ============ */
+.spinner{
+  display:inline-block;width:18px;height:18px;
+  border:2px solid rgba(255,255,255,.08);
+  border-top-color:rgba(59,130,246,.7);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  vertical-align:middle;margin-right:8px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-        .btn-allow {
-            background: linear-gradient(135deg, #1d4ed8, #2563eb);
-            color: #fff;
-            box-shadow: 0 4px 20px rgba(37,99,235,0.35);
-            font-size: 1rem;
-        }
-        .btn-allow:hover { box-shadow: 0 6px 28px rgba(37,99,235,0.45); }
+/* ============ FOOTER ============ */
+.footer-wrap{margin-top:36px;text-align:center}
+.footer-rule{
+  width:20px;height:1.5px;background:rgba(255,255,255,.04);
+  margin:0 auto 14px;border-radius:1px;
+}
+.footer-text{
+  font-size:.6rem;color:rgba(255,255,255,.1);
+  letter-spacing:4px;font-weight:500;
+}
 
-        .btn-deny {
-            background: rgba(255,255,255,0.04);
-            color: rgba(255,255,255,0.45);
-            border: 1px solid rgba(255,255,255,0.06);
-            margin-top: 10px;
-        }
-        .btn-deny:hover {
-            background: rgba(255,255,255,0.06);
-            border-color: rgba(255,255,255,0.1);
-        }
+/* ============ RESULT SCREEN ============ */
+.result-icon{text-align:center;margin-bottom:12px}
+.result-icon svg{width:32px;height:32px}
+.result-title{font-size:1.05rem;font-weight:600;text-align:center;margin-bottom:4px}
+.result-sub{font-size:.78rem;color:var(--text-secondary);text-align:center;margin-bottom:8px}
+.result-success .result-title{color:var(--green)}
+.result-denied .result-title{color:var(--red)}
 
-        .btn-reset {
-            background: linear-gradient(135deg, #1d4ed8, #2563eb);
-            color: #fff;
-            box-shadow: 0 4px 20px rgba(37,99,235,0.3);
-            margin-top: 20px;
-        }
-
-        .screen { display: none; width: 100%; }
-        .screen.active { display: block; }
-
-        /* Spinner */
-        .spinner {
-            display: inline-block; width: 18px; height: 18px;
-            border: 2px solid rgba(255,255,255,0.1);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            vertical-align: middle; margin-right: 8px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Footer */
-        .footer-area {
-            margin-top: 32px;
-            text-align: center;
-        }
-        .footer-line {
-            width: 24px; height: 2px;
-            background: rgba(255,255,255,0.06);
-            margin: 0 auto 12px;
-            border-radius: 1px;
-        }
-        .footer-text {
-            font-size: 0.65rem; color: rgba(255,255,255,0.12);
-            letter-spacing: 3px; font-weight: 500;
-        }
-
-        /* Action icon animations */
-        .action-icon {
-            width: 48px; height: 48px;
-            margin: 0 auto 16px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%;
-            transition: all 0.4s ease;
-        }
-        .action-icon.waiting {
-            background: rgba(59,130,246,0.08);
-            border: 1px solid rgba(59,130,246,0.15);
-        }
-        .action-icon.confirm {
-            background: rgba(34,197,94,0.08);
-            border: 1px solid rgba(34,197,94,0.2);
-            animation: iconBounce 0.6s ease;
-        }
-        @keyframes iconBounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-        }
-    </style>
+/* ============ RESPONSIVE ============ */
+@media(min-width:400px){
+  .card{max-width:380px;padding:38px 30px 34px}
+  .btn{padding:16px 20px;font-size:.95rem}
+}
+</style>
 </head>
 <body>
-    <div class="app">
-        <!-- Logo -->
-        <div class="logo-area">
-            <div class="logo-glow"></div>
-            <div class="logo-ring">
-                <svg class="logo-icon" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stop-color="#60a5fa"/>
-                            <stop offset="100%" stop-color="#2563eb"/>
-                        </linearGradient>
-                    </defs>
-                    <circle cx="100" cy="100" r="88" fill="url(#lg2)" opacity="0.9"/>
-                    <rect x="50" y="44" width="34" height="112" rx="3" fill="#fff" opacity="0.92"/>
-                    <polygon points="118,44 154,60 154,156 118,156" fill="#fff" opacity="0.78"/>
-                    <rect x="46" y="38" width="112" height="11" rx="2.5" fill="#fff"/>
-                    <rect x="46" y="150" width="72" height="9" rx="2.5" fill="#fff"/>
-                    <circle cx="100" cy="29" r="4.5" fill="#fff" opacity="0.6"/>
-                </svg>
-            </div>
-        </div>
 
-        <div class="app-title">STEAM 启航</div>
-        <div class="app-subtitle">Access Controller</div>
+<canvas id="particles"></canvas>
 
-        <div class="card">
-            <!-- Screen 1: Waiting -->
-            <div class="screen active" id="screenWait">
-                <div class="action-icon waiting" id="waitIcon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(59,130,246,0.5)" stroke-width="1.5">
-                        <path d="M9 12l2 2 4-4"/>
-                        <circle cx="12" cy="12" r="9"/>
-                    </svg>
-                </div>
-                <p class="screen-label">等待授权请求</p>
-                <p class="status" id="statusWait">
-                    <span class="spinner"></span>正在初始化...
-                </p>
-            </div>
+<div class="aurora aurora-1"></div>
+<div class="aurora aurora-2"></div>
+<div class="aurora aurora-3"></div>
+<div class="grain"></div>
 
-            <!-- Screen 2: Confirm -->
-            <div class="screen" id="screenConfirm">
-                <div class="action-icon confirm" id="confirmIcon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(34,197,94,0.6)" stroke-width="1.5">
-                        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
-                        <path d="M12 8v4M12 16h.01"/>
-                    </svg>
-                </div>
-                <p class="screen-label">有人正在请求访问</p>
-                <button class="btn btn-allow" id="btnAllow">
-                    <span style="display:inline-flex;align-items:center;gap:8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                        允 许 访 问
-                    </span>
-                </button>
-                <button class="btn btn-deny" id="btnDeny">拒 绝</button>
-                <p class="status" id="statusConfirm"></p>
-            </div>
+<div class="app">
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <div class="logo-glow-pulse"></div>
+    <div class="logo-ring-outer">
+      <div class="logo-svg">
+        <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="lg3" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#60a5fa"/>
+              <stop offset="100%" stop-color="#3b82f6"/>
+            </linearGradient>
+          </defs>
+          <circle cx="100" cy="100" r="86" fill="url(#lg3)" opacity=".85"/>
+          <rect x="52" y="46" width="32" height="108" rx="3" fill="#fff" opacity=".9"/>
+          <polygon points="116,46 150,62 150,154 116,154" fill="#fff" opacity=".75"/>
+          <rect x="48" y="40" width="108" height="10" rx="2" fill="#fff"/>
+          <rect x="48" y="148" width="70" height="9" rx="2" fill="#fff"/>
+          <circle cx="100" cy="31" r="4" fill="#fff" opacity=".55"/>
+        </svg>
+      </div>
+    </div>
+  </div>
 
-            <!-- Screen 3: Result -->
-            <div class="screen" id="screenResult">
-                <p class="status" id="statusResult" style="font-size:0.95rem;margin:20px 0"></p>
-                <button class="btn btn-reset" id="btnReset">返回就绪</button>
-            </div>
-        </div>
+  <div class="app-name">STEAM 启航</div>
+  <div class="app-tag">Access Controller</div>
 
-        <div class="footer-area">
-            <div class="footer-line"></div>
-            <div class="footer-text">DESIGNED BY OUYANG</div>
-        </div>
+  <!-- Card -->
+  <div class="card">
+    <!-- Waiting Screen -->
+    <div class="screen active" id="screenWait">
+      <div class="icon-center wait" id="iconWait">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(59,130,246,.45)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M9 12l2 2 4-4"/>
+          <circle cx="12" cy="12" r="9"/>
+        </svg>
+      </div>
+      <p class="screen-label">等待授权请求</p>
+      <p class="status-line" id="statusWait">
+        <span class="spinner"></span>正在初始化连接...
+      </p>
     </div>
 
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <script>
-        (function() {
-            const APP_PEER_ID = 'steam-ship-app';
-            let peer = null;
-            let currentConn = null;
+    <!-- Confirm Screen -->
+    <div class="screen" id="screenConfirm">
+      <div class="icon-center alert" id="iconAlert">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(16,185,129,.55)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M18 20V10M12 20V4M6 20v-6"/>
+        </svg>
+      </div>
+      <p class="screen-label">有人正在请求访问</p>
+      <button class="btn btn-primary" id="btnAllow">
+        <span style="display:inline-flex;align-items:center;gap:6px;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          允 许
+        </span>
+      </button>
+      <button class="btn btn-secondary" id="btnDeny">拒 绝</button>
+      <p class="status-line" id="statusConfirm"></p>
+    </div>
 
-            const screenWait = document.getElementById('screenWait');
-            const screenConfirm = document.getElementById('screenConfirm');
-            const screenResult = document.getElementById('screenResult');
-            const statusWait = document.getElementById('statusWait');
-            const statusConfirm = document.getElementById('statusConfirm');
-            const statusResult = document.getElementById('statusResult');
-            const btnAllow = document.getElementById('btnAllow');
-            const btnDeny = document.getElementById('btnDeny');
-            const btnReset = document.getElementById('btnReset');
+    <!-- Result Screen -->
+    <div class="screen" id="screenResult">
+      <div class="result-icon" id="resultIcon"></div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-sub" id="resultSub"></div>
+      <button class="btn btn-reset" id="btnReset">返回就绪</button>
+    </div>
+  </div>
 
-            function showScreen(name) {
-                [screenWait, screenConfirm, screenResult].forEach(function(s) {
-                    s.classList.remove('active');
-                });
-                document.getElementById('screen' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
-            }
+  <!-- Footer -->
+  <div class="footer-wrap">
+    <div class="footer-rule"></div>
+    <div class="footer-text">DESIGNED BY OUYANG</div>
+  </div>
+</div>
 
-            function setStatusWait(msg, state) {
-                statusWait.innerHTML = msg;
-                if (state === 'online') {
-                    statusWait.innerHTML = '<span class="status-dot online"></span>信令已就绪，等待连接...';
-                } else if (state === 'connecting') {
-                    statusWait.innerHTML = '<span class="status-dot connecting"></span>' + msg;
-                } else if (state === 'offline') {
-                    statusWait.innerHTML = '<span class="status-dot offline"></span>' + msg;
-                } else {
-                    statusWait.innerHTML = msg;
-                }
-            }
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script>
+/* ============ PARTICLE SYSTEM ============ */
+(function(){
+  var c=document.getElementById('particles');
+  var ctx=c.getContext('2d');
+  var W,H,particles=[];
+  var COUNT=50;
 
-            function tryInit() {
-                peer = new Peer(APP_PEER_ID);
-                let retried = false;
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight}
+  resize();window.addEventListener('resize',resize);
 
-                peer.on('open', function(id) {
-                    setStatusWait('', 'online');
-                });
+  for(var i=0;i<COUNT;i++){
+    particles.push({
+      x:Math.random()*W,y:Math.random()*H,
+      r:Math.random()*1.5+.5,
+      vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,
+      a:Math.random()*.4+.1
+    });
+  }
 
-                peer.on('connection', function(conn) {
-                    currentConn = conn;
-                    showScreen('confirm');
-                    statusConfirm.textContent = '';
-                    // Animate confirm icon
-                    var icon = document.getElementById('confirmIcon');
-                    icon.classList.remove('confirm');
-                    void icon.offsetWidth;
-                    icon.classList.add('confirm');
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(var i=0;i<COUNT;i++){
+      var p=particles[i];
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(148,163,184,'+p.a+')';
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
 
-                    conn.on('close', function() {
-                        if (currentConn === conn) {
-                            currentConn = null;
-                            showScreen('wait');
-                            setStatusWait('', 'online');
-                        }
-                    });
+/* ============ P2P AUTH ============ */
+(function(){
+  var APP_ID='steam-ship-app';
+  var peer=null,conn=null;
 
-                    conn.on('error', function() {
-                        if (currentConn === conn) {
-                            currentConn = null;
-                            showScreen('wait');
-                            setStatusWait('连接异常，等待重新连接...', 'offline');
-                        }
-                    });
-                });
+  var els={
+    wait:document.getElementById('screenWait'),
+    confirm:document.getElementById('screenConfirm'),
+    result:document.getElementById('screenResult'),
+    statusWait:document.getElementById('statusWait'),
+    statusConfirm:document.getElementById('statusConfirm'),
+    resultIcon:document.getElementById('resultIcon'),
+    resultTitle:document.getElementById('resultTitle'),
+    resultSub:document.getElementById('resultSub'),
+    btnAllow:document.getElementById('btnAllow'),
+    btnDeny:document.getElementById('btnDeny'),
+    btnReset:document.getElementById('btnReset'),
+    iconWait:document.getElementById('iconWait'),
+    iconAlert:document.getElementById('iconAlert')
+  };
 
-                peer.on('error', function(err) {
-                    console.error('App Peer error:', err);
-                    if (!retried) {
-                        retried = true;
-                        peer.destroy();
-                        statusWait.innerHTML = '<span class="spinner"></span>正在重连信令服务...';
-                        setTimeout(tryInit, 2000);
-                        return;
-                    }
-                    setStatusWait('信令服务连接失败，请重启 App', 'offline');
-                });
+  function show(id){
+    [els.wait,els.confirm,els.result].forEach(function(s){s.classList.remove('active')});
+    document.getElementById(id).classList.add('active');
+  }
 
-                peer.on('disconnected', function() {
-                    if (peer && !peer.destroyed) {
-                        statusWait.innerHTML = '<span class="spinner"></span>信令断开，自动重连中...';
-                        peer.reconnect();
-                    }
-                });
-            }
+  function waitStatus(msg,state){
+    if(state==='online'){
+      els.statusWait.innerHTML='<span class="dot online"></span>信令就绪，等待连接...';
+    }else if(state==='connecting'){
+      els.statusWait.innerHTML='<span class="dot connecting"></span>'+msg;
+    }else if(state==='offline'){
+      els.statusWait.innerHTML='<span class="dot offline"></span>'+msg;
+    }else{
+      els.statusWait.innerHTML=msg;
+    }
+  }
 
-            btnAllow.addEventListener('click', function() {
-                if (!currentConn) return;
-                currentConn.send('allow');
-                statusConfirm.innerHTML = '<span class="status-dot online" style="display:inline-block;margin-right:6px"></span>已授权';
-                btnAllow.style.opacity = '0.5';
-                btnAllow.disabled = true;
-                btnDeny.style.opacity = '0.3';
-                btnDeny.disabled = true;
-                setTimeout(function() {
-                    showScreen('result');
-                    statusResult.innerHTML = '<span style="display:block;font-size:1.1rem;color:#22c55e;margin-bottom:8px">授权成功</span><span style="color:rgba(255,255,255,0.3);font-size:0.8rem">网站已解锁</span>';
-                    cleanupConn();
-                }, 500);
-            });
+  function init(){
+    peer=new Peer(APP_ID);
+    var retried=false;
 
-            btnDeny.addEventListener('click', function() {
-                if (!currentConn) return;
-                currentConn.send('deny');
-                statusConfirm.innerHTML = '<span class="status-dot offline" style="display:inline-block;margin-right:6px"></span>已拒绝';
-                btnDeny.style.opacity = '0.5';
-                btnDeny.disabled = true;
-                btnAllow.style.opacity = '0.3';
-                btnAllow.disabled = true;
-                setTimeout(function() {
-                    showScreen('result');
-                    statusResult.innerHTML = '<span style="display:block;font-size:1.1rem;color:#ef4444;margin-bottom:8px">已拒绝</span><span style="color:rgba(255,255,255,0.3);font-size:0.8rem">此次访问请求被拒绝</span>';
-                    cleanupConn();
-                }, 500);
-            });
+    peer.on('open',function(){waitStatus('','online')});
 
-            btnReset.addEventListener('click', function() {
-                cleanupConn();
-                showScreen('wait');
-                setStatusWait('', 'online');
-            });
+    peer.on('connection',function(c){
+      conn=c;
+      show('screenConfirm');
+      els.statusConfirm.textContent='';
+      // bounce animation
+      els.iconAlert.classList.remove('alert');
+      void els.iconAlert.offsetWidth;
+      els.iconAlert.classList.add('alert');
 
-            function cleanupConn() {
-                if (currentConn) { try { currentConn.close(); } catch(e) {} currentConn = null; }
-            }
+      c.on('close',function(){
+        if(conn===c){conn=null;show('screenWait');waitStatus('','online')}
+      });
+      c.on('error',function(){
+        if(conn===c){conn=null;show('screenWait');waitStatus('连接异常','offline')}
+      });
+    });
 
-            tryInit();
-        })();
-    </script>
+    peer.on('error',function(){
+      if(!retried){retried=true;peer.destroy();els.statusWait.innerHTML='<span class="spinner"></span>重连信令服务...';setTimeout(init,2000);return}
+      waitStatus('信令连接失败，请重启 App','offline');
+    });
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('sw.js').catch(function() {});
-            });
-        }
-    </script>
+    peer.on('disconnected',function(){
+      if(peer&&!peer.destroyed){els.statusWait.innerHTML='<span class="spinner"></span>信令断开，自动重连...';peer.reconnect()}
+    });
+  }
+
+  els.btnAllow.addEventListener('click',function(){
+    if(!conn)return;
+    conn.send('allow');
+    els.statusConfirm.innerHTML='<span class="dot online"></span>已授权';
+    els.btnAllow.style.cssText='opacity:.4;pointer-events:none';
+    els.btnDeny.style.cssText='opacity:.2;pointer-events:none';
+    setTimeout(function(){
+      show('screenResult');
+      els.resultIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+      els.resultTitle.textContent='授权成功';
+      els.resultSub.textContent='网站已解锁';
+      els.result.className='screen active result-success';
+      cleanup();
+    },400);
+  });
+
+  els.btnDeny.addEventListener('click',function(){
+    if(!conn)return;
+    conn.send('deny');
+    els.statusConfirm.innerHTML='<span class="dot offline"></span>已拒绝';
+    els.btnDeny.style.cssText='opacity:.4;pointer-events:none';
+    els.btnAllow.style.cssText='opacity:.2;pointer-events:none';
+    setTimeout(function(){
+      show('screenResult');
+      els.resultIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+      els.resultTitle.textContent='已拒绝';
+      els.resultSub.textContent='此次访问请求被拒绝';
+      els.result.className='screen active result-denied';
+      cleanup();
+    },400);
+  });
+
+  els.btnReset.addEventListener('click',function(){
+    cleanup();
+    show('screenWait');
+    waitStatus('','online');
+  });
+
+  function cleanup(){
+    if(conn){try{conn.close()}catch(e){}conn=null}
+    els.btnAllow.style.cssText='';els.btnDeny.style.cssText='';
+  }
+
+  init();
+})();
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
+}
+</script>
 </body>
 </html>
