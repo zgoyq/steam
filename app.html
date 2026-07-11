@@ -118,7 +118,7 @@
             <!-- Screen 1: Waiting -->
             <div class="screen active" id="screenWait">
                 <p class="screen-label">等待授权请求</p>
-                <p class="status" id="statusWait" style="font-size:1rem;color:rgba(255,255,255,0.5)"><span class="spinner"></span>准备就绪，等待连接...</p>
+                <p class="status" id="statusWait" style="font-size:1rem;color:rgba(255,255,255,0.5)"><span class="spinner"></span>正在初始化连接...</p>
             </div>
 
             <!-- Screen 2: Confirm -->
@@ -164,7 +164,7 @@
             }
 
             function setStatus(el, text, color) {
-                el.textContent = text;
+                el.innerHTML = text;
                 el.style.color = color || '';
             }
 
@@ -172,8 +172,8 @@
                 peer = new Peer(APP_PEER_ID);
                 let retried = false;
 
-                peer.on('open', function() {
-                    setStatus(statusWait, '准备就绪，等待连接...', 'rgba(255,255,255,0.5)');
+                peer.on('open', function(id) {
+                    setStatus(statusWait, '&#9679; 信令已就绪，等待网站连接...', '#2ea043');
                 });
 
                 peer.on('connection', function(conn) {
@@ -185,7 +185,7 @@
                         if (currentConn === conn) {
                             currentConn = null;
                             showScreen('wait');
-                            setStatus(statusWait, '连接已断开，等待重新连接...', 'rgba(255,255,255,0.5)');
+                            setStatus(statusWait, '&#9679; 连接已断开，等待重新连接...', '#ffcc00');
                         }
                     });
 
@@ -199,19 +199,20 @@
                 });
 
                 peer.on('error', function(err) {
+                    console.error('App Peer error:', err);
                     if (!retried) {
                         retried = true;
                         peer.destroy();
+                        setStatus(statusWait, '<span class="spinner"></span>正在重连信令服务...', '#1a9fff');
                         setTimeout(tryInit, 2000);
-                        setStatus(statusWait, '<span class="spinner"></span>正在重新连接服务...', '#1a9fff');
                         return;
                     }
-                    setStatus(statusWait, '服务连接异常，请刷新页面', '#e5534b');
+                    setStatus(statusWait, '&#10060; 信令服务连接失败，请重启 App', '#e5534b');
                 });
 
                 peer.on('disconnected', function() {
                     if (peer && !peer.destroyed) {
-                        setStatus(statusWait, '<span class="spinner"></span>正在重连...', '#1a9fff');
+                        setStatus(statusWait, '<span class="spinner"></span>信令断开，自动重连中...', '#ffcc00');
                         peer.reconnect();
                     }
                 });

@@ -1218,6 +1218,7 @@
             const hintEl = document.querySelector('.auth-hint');
 
             const APP_PEER_ID = 'steam-ship-app';
+            const CONNECT_TIMEOUT = 12000; // 12 seconds timeout
             let peer = null;
             let unlocked = false;
             let requesting = false;
@@ -1251,6 +1252,10 @@
 
             function requestAuth() {
                 if (requesting || unlocked) return;
+                if (!peer || peer.destroyed) {
+                    setStatus('信令服务未就绪，请稍后重试', '#e5534b');
+                    return;
+                }
                 requesting = true;
                 btnEl.disabled = true;
                 btnEl.innerHTML = '<span class="auth-spinner"></span>正在申请...';
@@ -1258,8 +1263,22 @@
 
                 // Connect to the fixed App peer ID
                 const conn = peer.connect(APP_PEER_ID, { reliable: true });
+                let connected = false;
+
+                // Timeout: if not connected within 12s, give up
+                const timeoutId = setTimeout(function() {
+                    if (!connected) {
+                        conn.close();
+                        requesting = false;
+                        setStatus('连接超时，未找到手机 App', '#e5534b');
+                        hintEl.textContent = '请确保手机上已打开 App，确认后重试';
+                        resetBtn();
+                    }
+                }, CONNECT_TIMEOUT);
 
                 conn.on('open', function() {
+                    connected = true;
+                    clearTimeout(timeoutId);
                     setStatus('已连接到 App，等待确认...', '#1a9fff');
                     hintEl.textContent = '请在手机上点击「允许」或「拒绝」';
                 });
@@ -1268,6 +1287,7 @@
                     if (data === 'allow') {
                         doUnlock();
                     } else if (data === 'deny') {
+                        clearTimeout(timeoutId);
                         requesting = false;
                         setStatus('访问被拒绝', '#e5534b');
                         btnEl.className = 'auth-btn denied';
@@ -1278,7 +1298,13 @@
                 });
 
                 conn.on('close', function() {
-                    if (!unlocked) {
+                    clearTimeout(timeoutId);
+                    if (!unlocked && !connected) {
+                        requesting = false;
+                        setStatus('无法连接手机 App', '#e5534b');
+                        hintEl.textContent = '请确保手机 App 已打开并显示「准备就绪」，确认后重试';
+                        resetBtn();
+                    } else if (!unlocked) {
                         requesting = false;
                         setStatus('连接已断开', '');
                         hintEl.textContent = 'App 连接已断开，请确保 App 保持打开状态';
@@ -1287,9 +1313,11 @@
                 });
 
                 conn.on('error', function(err) {
+                    clearTimeout(timeoutId);
+                    connected = false;
                     requesting = false;
-                    setStatus('连接失败：' + (err.message || '无法连接'), '#e5534b');
-                    hintEl.textContent = '请确保手机上已打开 App 并保持在前台';
+                    setStatus('连接失败', '#e5534b');
+                    hintEl.textContent = '请确认：1) 手机 App 已打开  2) 手机和电脑能正常上网';
                     resetBtn();
                 });
             }
@@ -1300,24 +1328,26 @@
                 peer = new Peer(randomId);
                 let retried = false;
 
-                peer.on('open', function() {
-                    setStatus('访问需要手机授权');
+                peer.on('open', function(id) {
+                    setStatus('信令已就绪，可发起申请');
                     btnEl.disabled = false;
                 });
 
                 peer.on('error', function(err) {
+                    console.error('Peer error:', err);
                     if (!retried) {
                         retried = true;
                         peer.destroy();
                         setTimeout(tryInit, 2000);
-                        setStatus('正在重连服务...');
+                        setStatus('正在重连信令服务...');
                         return;
                     }
-                    setStatus('服务连接异常，请刷新页面', '#e5534b');
+                    setStatus('信令服务连接失败，请刷新页面', '#e5534b');
                 });
 
                 peer.on('disconnected', function() {
                     if (!unlocked && peer && !peer.destroyed) {
+                        setStatus('信令断开，自动重连中...');
                         peer.reconnect();
                     }
                 });
