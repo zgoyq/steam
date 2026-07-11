@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Steam 启航</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Steam启航">
+    <meta name="theme-color" content="#0a0e17">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #0a0e17;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Background */
+        .bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(ellipse at 50% 0%, #162040 0%, #0a0e17 70%);
+            z-index: 0;
+        }
+        .bg::after {
+            content: '';
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(26,159,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(26,159,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Main container */
+        .container {
+            position: relative; z-index: 1;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 100%;
+            padding: 32px 28px;
+        }
+
+        /* Logo area */
+        .logo-wrap {
+            width: 96px; height: 96px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .logo-ring {
+            position: absolute; inset: -8px;
+            border-radius: 50%;
+            border: 2px solid rgba(26,159,255,0.15);
+            animation: ringPulse 3s ease-in-out infinite;
+        }
+        @keyframes ringPulse {
+            0%,100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.08); opacity: 0.6; }
+        }
+        .logo-canvas {
+            width: 96px; height: 96px;
+        }
+
+        /* Brand */
+        .brand {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+        .subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 6px;
+            margin-bottom: 48px;
+        }
+
+        /* Login card */
+        .card {
+            width: 100%; max-width: 340px;
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 32px 28px;
+        }
+        .card-title {
+            font-size: 15px;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            margin-bottom: 24px;
+            letter-spacing: 2px;
+        }
+
+        /* Input */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .input-group input {
+            width: 100%;
+            height: 52px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 20px;
+            letter-spacing: 8px;
+            text-align: center;
+            outline: none;
+            transition: all 0.25s;
+            padding: 0 20px;
+        }
+        .input-group input::placeholder {
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 2px;
+            font-size: 14px;
+        }
+        .input-group input:focus {
+            border-color: rgba(26,159,255,0.5);
+            background: rgba(26,159,255,0.06);
+            box-shadow: 0 0 0 4px rgba(26,159,255,0.08);
+        }
+
+        /* Button */
+        .btn {
+            width: 100%;
+            height: 52px;
+            background: linear-gradient(135deg, #1a9fff 0%, #0d7ed6 100%);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active {
+            transform: scale(0.97);
+            opacity: 0.9;
+        }
+
+        /* Error */
+        .error {
+            color: #ff4d5a;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 12px;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: all 0.25s;
+            pointer-events: none;
+        }
+        .error.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Shake */
+        .shake {
+            animation: shake 0.5s ease;
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            10%,50%,90% { transform: translateX(-6px); }
+            30%,70% { transform: translateX(6px); }
+        }
+
+        /* Footer */
+        .footer {
+            position: absolute; bottom: 36px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 2px;
+        }
+
+        /* Loading spinner (for redirect) */
+        .spinner {
+            display: none;
+            width: 20px; height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin: 16px auto 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Success state */
+        .card.success .btn { background: #22c55e; pointer-events: none; }
+        .card.success .input-group input { border-color: rgba(34,197,94,0.3); pointer-events: none; }
+        .card.success .spinner { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+<div class="container">
+    <!-- Logo -->
+    <div class="logo-wrap">
+        <div class="logo-ring"></div>
+        <canvas class="logo-canvas" id="logoCanvas" width="96" height="96"></canvas>
+    </div>
+
+    <!-- Brand -->
+    <div class="brand">Steam 启航</div>
+    <div class="subtitle">安全验证 · 正版助手</div>
+
+    <!-- Login Card -->
+    <div class="card" id="card">
+        <div class="card-title">输入密钥以解锁</div>
+        <div class="input-group" id="inputGroup">
+            <input type="password" id="pwInput" placeholder="请输入密钥" maxlength="20" inputmode="numeric" autocomplete="off">
+        </div>
+        <button class="btn" id="pwBtn">验 证</button>
+        <div class="error" id="pwError">密钥错误，请重试</div>
+        <div class="spinner" id="spinner"></div>
+    </div>
+
+    <div class="footer">Designed by OuYang</div>
+</div>
+
+<script>
+    // Draw logo
+    (function() {
+        var c = document.getElementById('logoCanvas');
+        var ctx = c.getContext('2d');
+        var s = 96;
+
+        // Background circle
+        var bgGrad = ctx.createLinearGradient(0, 0, s, s);
+        bgGrad.addColorStop(0, '#1a9fff');
+        bgGrad.addColorStop(1, '#0d7ed6');
+        ctx.fillStyle = bgGrad;
+        ctx.beginPath();
+        ctx.arc(s/2, s/2, s/2-4, 0, Math.PI*2);
+        ctx.fill();
+
+        // Door left
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(s*0.32, s*0.28, s*0.18, s*0.44);
+
+        // Door right (opening)
+        ctx.globalAlpha = 0.85;
+        ctx.beginPath();
+        ctx.moveTo(s*0.55, s*0.28);
+        ctx.lineTo(s*0.7, s*0.32);
+        ctx.lineTo(s*0.7, s*0.72);
+        ctx.lineTo(s*0.55, s*0.72);
+        ctx.fill();
+
+        // Light beam
+        ctx.globalAlpha = 0.3;
+        var beamGrad = ctx.createLinearGradient(s*0.55, 0, s*0.8, 0);
+        beamGrad.addColorStop(0, 'rgba(255,255,255,0.9)');
+        beamGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = beamGrad;
+        ctx.beginPath();
+        ctx.moveTo(s*0.53, s*0.35);
+        ctx.lineTo(s*0.78, s*0.25);
+        ctx.lineTo(s*0.78, s*0.75);
+        ctx.lineTo(s*0.53, s*0.65);
+        ctx.fill();
+
+        ctx.globalAlpha = 1;
+
+        // Top bar
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(s*0.28, s*0.22, s*0.44, s*0.05);
+
+        // Bottom bar
+        ctx.fillRect(s*0.28, s*0.73, s*0.3, s*0.04);
+    })();
+
+    // Password gate
+    (function() {
+        var CORRECT_PW = '1723662167';
+        var card = document.getElementById('card');
+        var input = document.getElementById('pwInput');
+        var btn = document.getElementById('pwBtn');
+        var error = document.getElementById('pwError');
+        var group = document.getElementById('inputGroup');
+
+        function tryUnlock() {
+            var val = input.value.trim();
+            if (val === CORRECT_PW) {
+                // Success animation
+                card.classList.add('success');
+                btn.textContent = '已解锁';
+                error.classList.remove('show');
+
+                // Redirect to main site with auto-unlock
+                setTimeout(function() {
+                    window.location.href = 'index.html#unlock=1723662167';
+                }, 800);
+            } else {
+                group.classList.add('shake');
+                error.classList.add('show');
+                input.value = '';
+                input.focus();
+                setTimeout(function() {
+                    group.classList.remove('shake');
+                    error.classList.remove('show');
+                }, 2000);
+            }
+        }
+
+        btn.addEventListener('click', tryUnlock);
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') tryUnlock();
+        });
+
+        // Focus input on load
+        setTimeout(function() { input.focus(); }, 600);
+    })();
+</script>
+
+<!-- PWA Service Worker -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('sw.js').catch(function() {});
+        });
+    }
+</script>
+
+</body>
+</html>
