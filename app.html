@@ -85,9 +85,15 @@ html,body{
 /* ============ GRAIN OVERLAY ============ */
 .grain{
   position:fixed;inset:0;z-index:1;pointer-events:none;
-  opacity:.035;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size:256px 256px;
+  opacity:.04;
+  background-image:url(grain.png);
+  background-size:cover;background-position:center;
+}
+.aurora-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  opacity:.7;
+  background-image:url(aurora.png);
+  background-size:cover;background-position:center;
 }
 
 /* ============ MAIN LAYOUT ============ */
@@ -318,6 +324,7 @@ html,body{
 </head>
 <body>
 
+<div class="aurora-bg"></div>
 <canvas id="particles"></canvas>
 
 <div class="aurora aurora-1"></div>
@@ -402,7 +409,7 @@ html,body{
   </div>
 </div>
 
-<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script src="peerjs.min.js"></script>
 <script>
 /* ============ PARTICLE SYSTEM ============ */
 (function(){
