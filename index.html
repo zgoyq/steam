@@ -18,11 +18,11 @@
     <!-- ===== 第一道防火墙：内容安全策略 (CSP) ===== -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' 'unsafe-inline';
+        script-src 'self' 'unsafe-inline' https://unpkg.com;
         style-src 'self' 'unsafe-inline';
         img-src 'self' data: https:;
-        font-src 'self' data:;
-        connect-src 'self';
+        font-src 'self' data: https://fonts.gstatic.com;
+        connect-src 'self' wss://0.peerjs.com https://0.peerjs.com;
         frame-src 'none';
         object-src 'none';
         base-uri 'self';
@@ -802,135 +802,115 @@
             }
         }
 
-        /* ============ PASSWORD OVERLAY ============ */
-        .pw-overlay {
+        /* ============ AUTH OVERLAY ============ */
+        .auth-overlay {
             position: fixed; inset: 0; z-index: 99999;
             background: linear-gradient(135deg, #0a0e17 0%, #111827 40%, #0d1117 100%);
             display: flex; align-items: center; justify-content: center;
             font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
-        .pw-overlay::before {
+        .auth-overlay::before {
             content: ''; position: absolute; inset: 0;
             background: radial-gradient(ellipse at 50% 0%, rgba(26,159,255,0.08) 0%, transparent 60%),
                         radial-gradient(ellipse at 80% 40%, rgba(26,159,255,0.04) 0%, transparent 50%),
                         radial-gradient(ellipse at 20% 80%, rgba(13,126,214,0.06) 0%, transparent 50%);
         }
-        .pw-grid {
+        .auth-grid {
             position: absolute; inset: 0; opacity: 0.03;
             background-image: linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px),
                               linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px);
             background-size: 60px 60px;
         }
-        .pw-card {
+        .auth-card {
             position: relative; z-index: 1;
-            background: rgba(22,27,34,0.7);
+            background: rgba(22,27,34,0.75);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 20px;
-            padding: 48px 44px 40px;
-            max-width: 420px; width: 90%;
+            padding: 40px 36px 36px;
+            max-width: 440px; width: 90%;
             text-align: center;
             box-shadow: 0 32px 64px rgba(0,0,0,0.5), 0 0 80px rgba(26,159,255,0.04);
-            animation: pwCardIn 0.8s ease-out;
+            animation: authCardIn 0.8s ease-out;
         }
-        @keyframes pwCardIn {
-            from { opacity: 0; transform: translateY(24px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes authCardIn {
+            from { opacity: 0; transform: translateY(24px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .pw-logo {
-            margin-bottom: 12px;
-            display: inline-block;
+        .auth-logo { margin-bottom: 10px; display: inline-block; }
+        .auth-logo svg { width: 52px; height: 52px; }
+        .auth-title {
+            font-size: 1.4rem; font-weight: 700; color: #e6edf3;
+            margin-bottom: 20px; letter-spacing: 2px;
         }
-        .pw-logo svg { width: 56px; height: 56px; }
-        .pw-title {
-            font-size: 1.5rem; font-weight: 700; color: #e6edf3;
-            margin-bottom: 6px; letter-spacing: 2px;
+        .auth-status {
+            font-size: 0.95rem; color: rgba(255,255,255,0.55);
+            margin-bottom: 24px; transition: color 0.4s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .pw-subtitle {
-            font-size: 0.85rem; color: rgba(255,255,255,0.35);
-            margin-bottom: 28px; letter-spacing: 4px; text-transform: uppercase;
+        .auth-spinner {
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top-color: #1a9fff;
+            border-radius: 50%;
+            animation: authSpin 0.8s linear infinite;
         }
-        .pw-input-group {
-            position: relative; margin-bottom: 20px;
+        @keyframes authSpin { to { transform: rotate(360deg); } }
+        .auth-code-box {
+            background: rgba(26,159,255,0.06);
+            border: 1px solid rgba(26,159,255,0.15);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
         }
-        .pw-input-group input {
-            width: 100%; padding: 14px 18px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 12px;
-            color: #fff; font-size: 1.05rem;
-            outline: none; text-align: center; letter-spacing: 6px;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
+        .auth-code-label {
+            font-size: 0.75rem; color: rgba(255,255,255,0.3);
+            letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px;
         }
-        .pw-input-group input::placeholder {
-            color: rgba(255,255,255,0.2); letter-spacing: 2px;
+        .auth-code {
+            font-size: 2.4rem; font-weight: 700; letter-spacing: 12px;
+            color: #1a9fff; font-family: 'SF Mono','Consolas','Monaco',monospace;
+            user-select: all;
         }
-        .pw-input-group input:focus {
-            border-color: #1a9fff;
-            box-shadow: 0 0 0 3px rgba(26,159,255,0.15), 0 0 24px rgba(26,159,255,0.08);
-            background: rgba(255,255,255,0.06);
+        .auth-qr { margin-bottom: 18px; }
+        .auth-qr img {
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-        .pw-input-group.shake input {
-            animation: pwShake 0.5s ease;
-            border-color: #e5534b;
-            box-shadow: 0 0 0 3px rgba(229,83,75,0.2);
+        .auth-hint {
+            font-size: 0.8rem; color: rgba(255,255,255,0.28);
+            line-height: 1.6; letter-spacing: 0.5px;
         }
-        @keyframes pwShake {
-            0%,100% { transform: translateX(0); }
-            20% { transform: translateX(-8px); }
-            40% { transform: translateX(8px); }
-            60% { transform: translateX(-6px); }
-            80% { transform: translateX(6px); }
-        }
-        .pw-error {
-            color: #e5534b; font-size: 0.82rem;
-            margin-top: 8px; opacity: 0; transition: opacity 0.3s;
-            letter-spacing: 1px;
-        }
-        .pw-error.show { opacity: 1; }
-        .pw-btn {
-            width: 100%; padding: 14px;
-            background: linear-gradient(135deg, #1a9fff, #0d7ed6);
-            border: none; border-radius: 12px;
-            color: #fff; font-size: 1rem; font-weight: 600;
-            cursor: pointer; letter-spacing: 3px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 16px rgba(26,159,255,0.25);
-        }
-        .pw-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 24px rgba(26,159,255,0.35);
-        }
-        .pw-btn:active { transform: scale(0.98); }
+        .auth-hint strong { color: rgba(255,255,255,0.45); }
     </style>
 </head>
 <body>
 
-    <!-- ==================== PASSWORD GATE ==================== -->
-    <div class="pw-overlay" id="pwOverlay">
-        <div class="pw-grid"></div>
-        <div class="pw-card">
-            <div class="pw-logo">
+    <!-- ==================== AUTH GATE ==================== -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-grid"></div>
+        <div class="auth-card">
+            <div class="auth-logo">
                 <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs><linearGradient id="pwg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a9fff"/><stop offset="100%" stop-color="#0d7ed6"/></linearGradient><linearGradient id="pwb" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fff" stop-opacity="0.9"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-                    <circle cx="100" cy="100" r="88" fill="url(#pwg)"/>
+                    <defs><linearGradient id="ag" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a9fff"/><stop offset="100%" stop-color="#0d7ed6"/></linearGradient><linearGradient id="ab" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fff" stop-opacity="0.9"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+                    <circle cx="100" cy="100" r="88" fill="url(#ag)"/>
                     <rect x="48" y="42" width="36" height="116" rx="4" fill="#fff"/>
                     <polygon points="118,42 156,58 156,158 118,158" fill="#fff" opacity="0.85"/>
-                    <polygon points="88,58 136,58 156,142 88,142" fill="url(#pwb)" opacity="0.5"/>
+                    <polygon points="88,58 136,58 156,142 88,142" fill="url(#ab)" opacity="0.5"/>
                     <rect x="44" y="36" width="116" height="12" rx="3" fill="#fff"/>
                     <rect x="44" y="152" width="76" height="10" rx="3" fill="#fff"/>
                     <circle cx="100" cy="28" r="5" fill="#fff" opacity="0.7"/>
                 </svg>
             </div>
-            <h2 class="pw-title">Steam 启航</h2>
-            <p class="pw-subtitle">Please Enter Password</p>
-            <div class="pw-input-group" id="pwInputGroup">
-                <input type="password" id="pwInput" placeholder="输入访问密码" maxlength="20" autocomplete="off" autofocus>
+            <h2 class="auth-title">Steam 启航</h2>
+            <p class="auth-status" id="authStatus"><span class="auth-spinner"></span>正在生成连接码...</p>
+            <div class="auth-code-box">
+                <p class="auth-code-label">连接码</p>
+                <p class="auth-code" id="authCode">------</p>
             </div>
-            <p class="pw-error" id="pwError">密码错误，请重试</p>
-            <button class="pw-btn" id="pwBtn">进 入</button>
+            <div class="auth-qr" id="authQR"></div>
+            <p class="auth-hint">打开 <strong>Steam 启航 App</strong>，输入上方连接码<br>或扫描二维码授权访问</p>
         </div>
     </div>
 
@@ -1154,6 +1134,7 @@
     <button class="back-to-top" id="backToTop" aria-label="返回顶部">&#9650;</button>
 
     <!-- ==================== SCRIPTS ==================== -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script>
         // Mobile navigation toggle
         const mobileToggle = document.getElementById('mobileToggle');
@@ -1202,53 +1183,95 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        /* ============ PASSWORD GATE ============ */
+        /* ============ P2P AUTH GATE ============ */
         (function() {
-            const CORRECT_PW = '1723662167';
-            const overlay = document.getElementById('pwOverlay');
-            const input = document.getElementById('pwInput');
-            const btn = document.getElementById('pwBtn');
-            const error = document.getElementById('pwError');
-            const group = document.getElementById('pwInputGroup');
+            const overlay = document.getElementById('authOverlay');
+            const statusEl = document.getElementById('authStatus');
+            const codeEl = document.getElementById('authCode');
+            const qrEl = document.getElementById('authQR');
+
+            function uid6() {
+                const c = '0123456789';
+                let s = '';
+                for (let i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)];
+                return s;
+            }
+
+            const code = uid6();
+            const peerId = 'steam-ship-' + code;
+            codeEl.textContent = code;
+
+            // QR code via goQR API
+            var qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=26-159-255&bgcolor=22-27-34&data=' + encodeURIComponent(peerId);
+            qrEl.innerHTML = '<img src="' + qrSrc + '" alt="QR" width="180" height="180" onerror="this.style.display=\'none\'">';
+
+            var peer;
+            var unlocked = false;
+
+            function setStatus(html, color) {
+                statusEl.innerHTML = html;
+                if (color) statusEl.style.color = color;
+            }
+
+            function tryInit() {
+                peer = new Peer(peerId);
+                var retried = false;
+
+                peer.on('open', function() {
+                    setStatus('等待 App 授权...');
+                });
+
+                peer.on('connection', function(conn) {
+                    setStatus('<span class="auth-spinner"></span>已连接，等待确认...', '#1a9fff');
+                    conn.on('data', function(data) {
+                        if (data === 'allow') {
+                            setStatus('授权成功，正在进入...', '#2ea043');
+                            setTimeout(doUnlock, 500);
+                        } else if (data === 'deny') {
+                            setStatus('访问被拒绝', '#e5534b');
+                            var hint = document.querySelector('.auth-hint');
+                            if (hint) hint.textContent = '授权被拒绝，请刷新页面重试';
+                        }
+                    });
+                    conn.on('close', function() {
+                        if (!unlocked) setStatus('连接已断开，等待重新授权...', '');
+                    });
+                    conn.on('error', function() {
+                        if (!unlocked) setStatus('连接异常，等待重新授权...', '#e5534b');
+                    });
+                });
+
+                peer.on('error', function(err) {
+                    if (!retried) {
+                        retried = true;
+                        peer.destroy();
+                        setTimeout(tryInit, 2000);
+                        setStatus('<span class="auth-spinner"></span>正在重连...');
+                        return;
+                    }
+                    setStatus('连接服务异常，请刷新页面重试', '#e5534b');
+                });
+
+                peer.on('disconnected', function() {
+                    if (!unlocked && peer && !peer.destroyed) {
+                        setStatus('<span class="auth-spinner"></span>正在重连...');
+                        peer.reconnect();
+                    }
+                });
+            }
 
             function doUnlock() {
+                unlocked = true;
                 overlay.style.opacity = '0';
                 overlay.style.pointerEvents = 'none';
                 overlay.style.transition = 'opacity 0.4s ease';
-                setTimeout(function() { overlay.remove(); }, 400);
-                // Clean hash
-                if (window.location.hash) {
-                    history.replaceState(null, '', window.location.pathname);
-                }
+                setTimeout(function() {
+                    overlay.remove();
+                    if (peer && !peer.destroyed) peer.destroy();
+                }, 400);
             }
 
-            // Auto-unlock via App token
-            var hash = window.location.hash;
-            if (hash === '#unlock=1723662167') {
-                doUnlock();
-                return;
-            }
-
-            function tryUnlock() {
-                const val = input.value.trim();
-                if (val === CORRECT_PW) {
-                    doUnlock();
-                } else {
-                    group.classList.add('shake');
-                    error.classList.add('show');
-                    input.value = '';
-                    input.focus();
-                    setTimeout(function() {
-                        group.classList.remove('shake');
-                        error.classList.remove('show');
-                    }, 2000);
-                }
-            }
-
-            btn.addEventListener('click', tryUnlock);
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') tryUnlock();
-            });
+            tryInit();
         })();
     </script>
 

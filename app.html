@@ -2,340 +2,334 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>Steam 启航</title>
-
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Steam 启航 - 授权 App</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Steam启航">
     <meta name="theme-color" content="#0a0e17">
-
+    <link rel="manifest" href="manifest.json">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
-            width: 100%; height: 100%;
-            overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             background: #0a0e17;
             -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
+            user-select: none; -webkit-user-select: none;
         }
 
-        /* Background */
-        .bg {
-            position: fixed; inset: 0;
-            background: radial-gradient(ellipse at 50% 0%, #162040 0%, #0a0e17 70%);
-            z-index: 0;
-        }
-        .bg::after {
-            content: '';
-            position: absolute; inset: 0;
-            background-image:
-                linear-gradient(rgba(26,159,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(26,159,255,0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
+        .app {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at 50% 0%, rgba(26,159,255,0.06) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 70%, rgba(13,126,214,0.04) 0%, transparent 50%);
+            padding: 24px;
         }
 
-        /* Main container */
-        .container {
-            position: relative; z-index: 1;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            height: 100%;
-            padding: 32px 28px;
-        }
+        /* Logo */
+        .logo { margin-bottom: 8px; }
+        .logo svg { width: 64px; height: 64px; }
 
-        /* Logo area */
-        .logo-wrap {
-            width: 96px; height: 96px;
-            margin-bottom: 24px;
-            position: relative;
-        }
-        .logo-ring {
-            position: absolute; inset: -8px;
-            border-radius: 50%;
-            border: 2px solid rgba(26,159,255,0.15);
-            animation: ringPulse 3s ease-in-out infinite;
-        }
-        @keyframes ringPulse {
-            0%,100% { transform: scale(1); opacity: 0.3; }
-            50% { transform: scale(1.08); opacity: 0.6; }
-        }
-        .logo-canvas {
-            width: 96px; height: 96px;
-        }
-
-        /* Brand */
-        .brand {
-            font-size: 32px;
-            font-weight: 700;
-            letter-spacing: 4px;
-            color: #fff;
-            margin-bottom: 6px;
+        /* Title */
+        .title {
+            font-size: 1.3rem; font-weight: 700; color: #e6edf3;
+            letter-spacing: 3px; margin-bottom: 4px;
         }
         .subtitle {
-            font-size: 13px;
-            color: rgba(255,255,255,0.35);
-            letter-spacing: 6px;
-            margin-bottom: 48px;
+            font-size: 0.78rem; color: rgba(255,255,255,0.25);
+            letter-spacing: 4px; margin-bottom: 32px;
         }
 
-        /* Login card */
+        /* Card */
         .card {
-            width: 100%; max-width: 340px;
-            background: rgba(255,255,255,0.04);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
+            width: 100%; max-width: 360px;
+            background: rgba(22,27,34,0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255,255,255,0.08);
-            padding: 32px 28px;
-        }
-        .card-title {
-            font-size: 15px;
-            color: rgba(255,255,255,0.6);
-            text-align: center;
-            margin-bottom: 24px;
-            letter-spacing: 2px;
+            border-radius: 20px;
+            padding: 28px 24px 24px;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.5);
         }
 
-        /* Input */
-        .input-group {
-            position: relative;
-            margin-bottom: 20px;
+        /* Input Group */
+        .input-group { margin-bottom: 16px; }
+        .input-label {
+            font-size: 0.72rem; color: rgba(255,255,255,0.3);
+            letter-spacing: 2px; text-transform: uppercase;
+            margin-bottom: 10px; text-align: center;
         }
-        .input-group input {
-            width: 100%;
-            height: 52px;
+        .code-input {
+            width: 100%; padding: 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            color: #fff; font-size: 2rem; font-weight: 700;
+            text-align: center; letter-spacing: 14px;
+            outline: none; caret-color: #1a9fff;
+            transition: all 0.3s;
+            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+        }
+        .code-input:focus {
+            border-color: #1a9fff;
+            box-shadow: 0 0 0 3px rgba(26,159,255,0.15);
             background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
-            color: #fff;
-            font-size: 20px;
-            letter-spacing: 8px;
-            text-align: center;
-            outline: none;
-            transition: all 0.25s;
-            padding: 0 20px;
         }
-        .input-group input::placeholder {
-            color: rgba(255,255,255,0.2);
-            letter-spacing: 2px;
-            font-size: 14px;
-        }
-        .input-group input:focus {
-            border-color: rgba(26,159,255,0.5);
-            background: rgba(26,159,255,0.06);
-            box-shadow: 0 0 0 4px rgba(26,159,255,0.08);
+        .code-input::placeholder {
+            color: rgba(255,255,255,0.15); letter-spacing: 4px; font-size: 1rem;
         }
 
-        /* Button */
+        /* Buttons */
         .btn {
-            width: 100%;
-            height: 52px;
-            background: linear-gradient(135deg, #1a9fff 0%, #0d7ed6 100%);
-            border: none;
-            border-radius: 14px;
+            width: 100%; padding: 15px; border: none; border-radius: 14px;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            letter-spacing: 2px; transition: all 0.25s;
+            outline: none; -webkit-tap-highlight-color: transparent;
+        }
+        .btn-connect {
+            background: linear-gradient(135deg, #1a9fff, #0d7ed6);
             color: #fff;
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: 3px;
-            cursor: pointer;
-            transition: all 0.2s;
-            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 4px 16px rgba(26,159,255,0.25);
         }
-        .btn:active {
-            transform: scale(0.97);
-            opacity: 0.9;
+        .btn-connect:active { transform: scale(0.97); opacity: 0.9; }
+
+        .btn-allow {
+            background: linear-gradient(135deg, #2ea043, #238636);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(46,160,67,0.3);
+        }
+        .btn-deny {
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.55);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .btn-allow:active, .btn-deny:active { transform: scale(0.97); }
+
+        .btn-row {
+            display: flex; gap: 12px; margin-top: 16px;
+        }
+        .btn-row .btn { flex: 1; }
+
+        /* Status */
+        .status {
+            text-align: center; font-size: 0.88rem; color: rgba(255,255,255,0.35);
+            margin-top: 16px; min-height: 24px;
+            transition: color 0.3s;
         }
 
-        /* Error */
-        .error {
-            color: #ff4d5a;
-            font-size: 13px;
-            text-align: center;
-            margin-top: 12px;
-            opacity: 0;
-            transform: translateY(-4px);
-            transition: all 0.25s;
-            pointer-events: none;
-        }
-        .error.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        /* Screens */
+        .screen { display: none; width: 100%; }
+        .screen.active { display: block; }
 
-        /* Shake */
-        .shake {
-            animation: shake 0.5s ease;
-        }
-        @keyframes shake {
-            0%,100% { transform: translateX(0); }
-            10%,50%,90% { transform: translateX(-6px); }
-            30%,70% { transform: translateX(6px); }
-        }
-
-        /* Footer */
-        .footer {
-            position: absolute; bottom: 36px;
-            font-size: 11px;
-            color: rgba(255,255,255,0.2);
-            letter-spacing: 2px;
-        }
-
-        /* Loading spinner (for redirect) */
+        /* Spinner */
         .spinner {
-            display: none;
-            width: 20px; height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.15);
+            border-top-color: #1a9fff;
             border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            margin: 16px auto 0;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle; margin-right: 6px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Success state */
-        .card.success .btn { background: #22c55e; pointer-events: none; }
-        .card.success .input-group input { border-color: rgba(34,197,94,0.3); pointer-events: none; }
-        .card.success .spinner { display: block; }
+        /* Footer */
+        .footer {
+            margin-top: 24px; font-size: 0.7rem; color: rgba(255,255,255,0.15);
+            letter-spacing: 1px; text-align: center;
+        }
     </style>
 </head>
 <body>
-
-<div class="bg"></div>
-
-<div class="container">
-    <!-- Logo -->
-    <div class="logo-wrap">
-        <div class="logo-ring"></div>
-        <canvas class="logo-canvas" id="logoCanvas" width="96" height="96"></canvas>
-    </div>
-
-    <!-- Brand -->
-    <div class="brand">Steam 启航</div>
-    <div class="subtitle">安全验证 · 正版助手</div>
-
-    <!-- Login Card -->
-    <div class="card" id="card">
-        <div class="card-title">输入密钥以解锁</div>
-        <div class="input-group" id="inputGroup">
-            <input type="password" id="pwInput" placeholder="请输入密钥" maxlength="20" inputmode="numeric" autocomplete="off">
+    <div class="app">
+        <div class="logo">
+            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a9fff"/><stop offset="100%" stop-color="#0d7ed6"/></linearGradient><linearGradient id="lb" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fff" stop-opacity="0.9"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+                <circle cx="100" cy="100" r="88" fill="url(#lg)"/>
+                <rect x="48" y="42" width="36" height="116" rx="4" fill="#fff"/>
+                <polygon points="118,42 156,58 156,158 118,158" fill="#fff" opacity="0.85"/>
+                <polygon points="88,58 136,58 156,142 88,142" fill="url(#lb)" opacity="0.5"/>
+                <rect x="44" y="36" width="116" height="12" rx="3" fill="#fff"/>
+                <rect x="44" y="152" width="76" height="10" rx="3" fill="#fff"/>
+                <circle cx="100" cy="28" r="5" fill="#fff" opacity="0.7"/>
+            </svg>
         </div>
-        <button class="btn" id="pwBtn">验 证</button>
-        <div class="error" id="pwError">密钥错误，请重试</div>
-        <div class="spinner" id="spinner"></div>
+        <div class="title">Steam 启航</div>
+        <div class="subtitle">ACCESS CONTROLLER</div>
+
+        <div class="card">
+            <!-- Screen 1: Connect -->
+            <div class="screen active" id="screenConnect">
+                <div class="input-group">
+                    <p class="input-label">输入连接码</p>
+                    <input type="text" class="code-input" id="codeInput" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="off" autofocus>
+                </div>
+                <button class="btn btn-connect" id="btnConnect">连 接</button>
+                <p class="status" id="statusConnect">输入网站显示的 6 位连接码</p>
+            </div>
+
+            <!-- Screen 2: Confirm -->
+            <div class="screen" id="screenConfirm">
+                <p class="input-label" style="margin-bottom:20px">有人正在请求访问</p>
+                <button class="btn btn-allow" id="btnAllow">允 许 访 问</button>
+                <button class="btn btn-deny" id="btnDeny" style="margin-top:10px">拒 绝</button>
+                <p class="status" id="statusConfirm" style="margin-top:14px"></p>
+            </div>
+
+            <!-- Screen 3: Result -->
+            <div class="screen" id="screenResult">
+                <p class="status" id="statusResult" style="font-size:1rem"></p>
+                <button class="btn btn-connect" id="btnReset" style="margin-top:20px">重新开始</button>
+            </div>
+        </div>
+
+        <div class="footer">Designed by OuYang</div>
     </div>
 
-    <div class="footer">Designed by OuYang</div>
-</div>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script>
+        (function() {
+            var peer;
+            var currentConn;
+            var currentPeerId;
 
-<script>
-    // Draw logo
-    (function() {
-        var c = document.getElementById('logoCanvas');
-        var ctx = c.getContext('2d');
-        var s = 96;
+            const screenConnect = document.getElementById('screenConnect');
+            const screenConfirm = document.getElementById('screenConfirm');
+            const screenResult = document.getElementById('screenResult');
+            const codeInput = document.getElementById('codeInput');
+            const btnConnect = document.getElementById('btnConnect');
+            const btnAllow = document.getElementById('btnAllow');
+            const btnDeny = document.getElementById('btnDeny');
+            const btnReset = document.getElementById('btnReset');
+            const statusConnect = document.getElementById('statusConnect');
+            const statusConfirm = document.getElementById('statusConfirm');
+            const statusResult = document.getElementById('statusResult');
 
-        // Background circle
-        var bgGrad = ctx.createLinearGradient(0, 0, s, s);
-        bgGrad.addColorStop(0, '#1a9fff');
-        bgGrad.addColorStop(1, '#0d7ed6');
-        ctx.fillStyle = bgGrad;
-        ctx.beginPath();
-        ctx.arc(s/2, s/2, s/2-4, 0, Math.PI*2);
-        ctx.fill();
-
-        // Door left
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(s*0.32, s*0.28, s*0.18, s*0.44);
-
-        // Door right (opening)
-        ctx.globalAlpha = 0.85;
-        ctx.beginPath();
-        ctx.moveTo(s*0.55, s*0.28);
-        ctx.lineTo(s*0.7, s*0.32);
-        ctx.lineTo(s*0.7, s*0.72);
-        ctx.lineTo(s*0.55, s*0.72);
-        ctx.fill();
-
-        // Light beam
-        ctx.globalAlpha = 0.3;
-        var beamGrad = ctx.createLinearGradient(s*0.55, 0, s*0.8, 0);
-        beamGrad.addColorStop(0, 'rgba(255,255,255,0.9)');
-        beamGrad.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = beamGrad;
-        ctx.beginPath();
-        ctx.moveTo(s*0.53, s*0.35);
-        ctx.lineTo(s*0.78, s*0.25);
-        ctx.lineTo(s*0.78, s*0.75);
-        ctx.lineTo(s*0.53, s*0.65);
-        ctx.fill();
-
-        ctx.globalAlpha = 1;
-
-        // Top bar
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(s*0.28, s*0.22, s*0.44, s*0.05);
-
-        // Bottom bar
-        ctx.fillRect(s*0.28, s*0.73, s*0.3, s*0.04);
-    })();
-
-    // Password gate
-    (function() {
-        var CORRECT_PW = '1723662167';
-        var card = document.getElementById('card');
-        var input = document.getElementById('pwInput');
-        var btn = document.getElementById('pwBtn');
-        var error = document.getElementById('pwError');
-        var group = document.getElementById('inputGroup');
-
-        function tryUnlock() {
-            var val = input.value.trim();
-            if (val === CORRECT_PW) {
-                // Success animation
-                card.classList.add('success');
-                btn.textContent = '已解锁';
-                error.classList.remove('show');
-
-                // Redirect to main site with auto-unlock
-                setTimeout(function() {
-                    window.location.href = 'index.html#unlock=1723662167';
-                }, 800);
-            } else {
-                group.classList.add('shake');
-                error.classList.add('show');
-                input.value = '';
-                input.focus();
-                setTimeout(function() {
-                    group.classList.remove('shake');
-                    error.classList.remove('show');
-                }, 2000);
+            function showScreen(name) {
+                [screenConnect, screenConfirm, screenResult].forEach(function(s) {
+                    s.classList.remove('active');
+                });
+                if (name === 'connect') screenConnect.classList.add('active');
+                if (name === 'confirm') screenConfirm.classList.add('active');
+                if (name === 'result') screenResult.classList.add('active');
             }
+
+            function setStatus(el, text, color) {
+                el.textContent = text;
+                el.style.color = color || '';
+            }
+
+            // Auto-focus and number-only filter
+            codeInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+            });
+
+            // Connect on Enter
+            codeInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') doConnect();
+            });
+
+            btnConnect.addEventListener('click', doConnect);
+
+            function doConnect() {
+                var code = codeInput.value.trim();
+                if (code.length !== 6) {
+                    setStatus(statusConnect, '请输入 6 位连接码', '#e5534b');
+                    codeInput.focus();
+                    return;
+                }
+
+                var peerId = 'steam-ship-' + code;
+                currentPeerId = peerId;
+
+                setStatus(statusConnect, '<span class="spinner"></span>正在连接...', '#1a9fff');
+                btnConnect.disabled = true;
+                btnConnect.textContent = '连接中...';
+
+                peer = new Peer();
+
+                peer.on('open', function() {
+                    var conn = peer.connect(peerId, { reliable: true });
+
+                    conn.on('open', function() {
+                        currentConn = conn;
+                        showScreen('confirm');
+                        setStatus(statusConfirm, '已连接到网站');
+                    });
+
+                    conn.on('error', function() {
+                        cleanup('连接失败，请确认连接码正确', true);
+                    });
+
+                    conn.on('close', function() {
+                        if (currentConn === conn) {
+                            cleanup('连接已关闭', true);
+                        }
+                    });
+                });
+
+                peer.on('error', function() {
+                    cleanup('连接失败，请确认连接码正确', true);
+                });
+            }
+
+            btnAllow.addEventListener('click', function() {
+                if (!currentConn) return;
+                currentConn.send('allow');
+                setStatus(statusConfirm, '已授权！');
+                setTimeout(function() {
+                    showScreen('result');
+                    setStatus(statusResult, '授权成功，网站已解锁');
+                    cleanupPeer();
+                }, 400);
+            });
+
+            btnDeny.addEventListener('click', function() {
+                if (!currentConn) return;
+                currentConn.send('deny');
+                setStatus(statusConfirm, '已拒绝');
+                setTimeout(function() {
+                    showScreen('result');
+                    setStatus(statusResult, '已拒绝此次访问请求');
+                    cleanupPeer();
+                }, 400);
+            });
+
+            btnReset.addEventListener('click', function() {
+                cleanupPeer();
+                showScreen('connect');
+                codeInput.value = '';
+                btnConnect.disabled = false;
+                btnConnect.textContent = '连 接';
+                setStatus(statusConnect, '输入网站显示的 6 位连接码');
+                codeInput.focus();
+            });
+
+            function cleanup(msg, showConnect) {
+                cleanupPeer();
+                if (showConnect) {
+                    showScreen('connect');
+                    btnConnect.disabled = false;
+                    btnConnect.textContent = '连 接';
+                }
+                if (msg) setStatus(statusConnect, msg, '#e5534b');
+            }
+
+            function cleanupPeer() {
+                if (currentConn) { try { currentConn.close(); } catch(e) {} currentConn = null; }
+                if (peer && !peer.destroyed) { try { peer.destroy(); } catch(e) {} peer = null; }
+            }
+        })();
+    </script>
+
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js').catch(function() {});
+            });
         }
-
-        btn.addEventListener('click', tryUnlock);
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') tryUnlock();
-        });
-
-        // Focus input on load
-        setTimeout(function() { input.focus(); }, 600);
-    })();
-</script>
-
-<!-- PWA Service Worker -->
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('sw.js').catch(function() {});
-        });
-    }
-</script>
-
+    </script>
 </body>
 </html>
