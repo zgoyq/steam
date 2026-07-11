@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Steam 启航 - 授权 App</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Steam启航">
+    <meta name="theme-color" content="#0a0e17">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #0a0e17;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none; -webkit-user-select: none;
+        }
+        .app {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at 50% 0%, rgba(26,159,255,0.06) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 70%, rgba(13,126,214,0.04) 0%, transparent 50%);
+            padding: 24px;
+        }
+        .logo { margin-bottom: 8px; }
+        .logo svg { width: 64px; height: 64px; }
+        .title {
+            font-size: 1.3rem; font-weight: 700; color: #e6edf3;
+            letter-spacing: 3px; margin-bottom: 4px;
+        }
+        .subtitle {
+            font-size: 0.78rem; color: rgba(255,255,255,0.25);
+            letter-spacing: 4px; margin-bottom: 32px;
+        }
+        .card {
+            width: 100%; max-width: 360px;
+            background: rgba(22,27,34,0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 28px 24px 24px;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+        }
+        .screen-label {
+            font-size: 0.72rem; color: rgba(255,255,255,0.3);
+            letter-spacing: 2px; text-transform: uppercase;
+            margin-bottom: 12px; text-align: center;
+        }
+        .btn {
+            width: 100%; padding: 15px; border: none; border-radius: 14px;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            letter-spacing: 2px; transition: all 0.25s;
+            outline: none; -webkit-tap-highlight-color: transparent;
+        }
+        .btn-allow {
+            background: linear-gradient(135deg, #2ea043, #238636);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(46,160,67,0.3);
+        }
+        .btn-deny {
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.55);
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-top: 10px;
+        }
+        .btn-reset {
+            background: linear-gradient(135deg, #1a9fff, #0d7ed6);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(26,159,255,0.25);
+            margin-top: 16px;
+        }
+        .btn:active { transform: scale(0.97); }
+        .status {
+            text-align: center; font-size: 0.88rem; color: rgba(255,255,255,0.35);
+            margin-top: 16px; min-height: 24px;
+            transition: color 0.3s;
+        }
+        .screen { display: none; width: 100%; }
+        .screen.active { display: block; }
+        .spinner {
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.15);
+            border-top-color: #1a9fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle; margin-right: 6px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .footer {
+            margin-top: 24px; font-size: 0.7rem; color: rgba(255,255,255,0.15);
+            letter-spacing: 1px; text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="logo">
+            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a9fff"/><stop offset="100%" stop-color="#0d7ed6"/></linearGradient><linearGradient id="lb" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fff" stop-opacity="0.9"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+                <circle cx="100" cy="100" r="88" fill="url(#lg)"/>
+                <rect x="48" y="42" width="36" height="116" rx="4" fill="#fff"/>
+                <polygon points="118,42 156,58 156,158 118,158" fill="#fff" opacity="0.85"/>
+                <polygon points="88,58 136,58 156,142 88,142" fill="url(#lb)" opacity="0.5"/>
+                <rect x="44" y="36" width="116" height="12" rx="3" fill="#fff"/>
+                <rect x="44" y="152" width="76" height="10" rx="3" fill="#fff"/>
+                <circle cx="100" cy="28" r="5" fill="#fff" opacity="0.7"/>
+            </svg>
+        </div>
+        <div class="title">Steam 启航</div>
+        <div class="subtitle">ACCESS CONTROLLER</div>
+
+        <div class="card">
+            <!-- Screen 1: Waiting -->
+            <div class="screen active" id="screenWait">
+                <p class="screen-label">等待授权请求</p>
+                <p class="status" id="statusWait" style="font-size:1rem;color:rgba(255,255,255,0.5)"><span class="spinner"></span>准备就绪，等待连接...</p>
+            </div>
+
+            <!-- Screen 2: Confirm -->
+            <div class="screen" id="screenConfirm">
+                <p class="screen-label">有人正在请求访问</p>
+                <button class="btn btn-allow" id="btnAllow">允 许 访 问</button>
+                <button class="btn btn-deny" id="btnDeny">拒 绝</button>
+                <p class="status" id="statusConfirm"></p>
+            </div>
+
+            <!-- Screen 3: Result -->
+            <div class="screen" id="screenResult">
+                <p class="status" id="statusResult" style="font-size:1rem"></p>
+                <button class="btn btn-reset" id="btnReset">返回就绪</button>
+            </div>
+        </div>
+
+        <div class="footer">Designed by OuYang</div>
+    </div>
+
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script>
+        (function() {
+            const APP_PEER_ID = 'steam-ship-app';
+            let peer = null;
+            let currentConn = null;
+
+            const screenWait = document.getElementById('screenWait');
+            const screenConfirm = document.getElementById('screenConfirm');
+            const screenResult = document.getElementById('screenResult');
+            const statusWait = document.getElementById('statusWait');
+            const statusConfirm = document.getElementById('statusConfirm');
+            const statusResult = document.getElementById('statusResult');
+            const btnAllow = document.getElementById('btnAllow');
+            const btnDeny = document.getElementById('btnDeny');
+            const btnReset = document.getElementById('btnReset');
+
+            function showScreen(name) {
+                [screenWait, screenConfirm, screenResult].forEach(function(s) {
+                    s.classList.remove('active');
+                });
+                document.getElementById('screen' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+            }
+
+            function setStatus(el, text, color) {
+                el.textContent = text;
+                el.style.color = color || '';
+            }
+
+            function tryInit() {
+                peer = new Peer(APP_PEER_ID);
+                let retried = false;
+
+                peer.on('open', function() {
+                    setStatus(statusWait, '准备就绪，等待连接...', 'rgba(255,255,255,0.5)');
+                });
+
+                peer.on('connection', function(conn) {
+                    currentConn = conn;
+                    showScreen('confirm');
+                    setStatus(statusConfirm, '网站已发起访问请求');
+
+                    conn.on('close', function() {
+                        if (currentConn === conn) {
+                            currentConn = null;
+                            showScreen('wait');
+                            setStatus(statusWait, '连接已断开，等待重新连接...', 'rgba(255,255,255,0.5)');
+                        }
+                    });
+
+                    conn.on('error', function() {
+                        if (currentConn === conn) {
+                            currentConn = null;
+                            showScreen('wait');
+                            setStatus(statusWait, '连接异常，等待重新连接...', '#e5534b');
+                        }
+                    });
+                });
+
+                peer.on('error', function(err) {
+                    if (!retried) {
+                        retried = true;
+                        peer.destroy();
+                        setTimeout(tryInit, 2000);
+                        setStatus(statusWait, '<span class="spinner"></span>正在重新连接服务...', '#1a9fff');
+                        return;
+                    }
+                    setStatus(statusWait, '服务连接异常，请刷新页面', '#e5534b');
+                });
+
+                peer.on('disconnected', function() {
+                    if (peer && !peer.destroyed) {
+                        setStatus(statusWait, '<span class="spinner"></span>正在重连...', '#1a9fff');
+                        peer.reconnect();
+                    }
+                });
+            }
+
+            btnAllow.addEventListener('click', function() {
+                if (!currentConn) return;
+                currentConn.send('allow');
+                setStatus(statusConfirm, '已授权！', '#2ea043');
+                setTimeout(function() {
+                    showScreen('result');
+                    setStatus(statusResult, '授权成功，网站已解锁', '#2ea043');
+                    cleanupConn();
+                }, 400);
+            });
+
+            btnDeny.addEventListener('click', function() {
+                if (!currentConn) return;
+                currentConn.send('deny');
+                setStatus(statusConfirm, '已拒绝', '#e5534b');
+                setTimeout(function() {
+                    showScreen('result');
+                    setStatus(statusResult, '已拒绝此次访问请求', '#e5534b');
+                    cleanupConn();
+                }, 400);
+            });
+
+            btnReset.addEventListener('click', function() {
+                cleanupConn();
+                showScreen('wait');
+                setStatus(statusWait, '准备就绪，等待连接...', 'rgba(255,255,255,0.5)');
+            });
+
+            function cleanupConn() {
+                if (currentConn) { try { currentConn.close(); } catch(e) {} currentConn = null; }
+            }
+
+            tryInit();
+        })();
+    </script>
+
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js').catch(function() {});
+            });
+        }
+    </script>
+</body>
+</html>
