@@ -883,6 +883,34 @@
             line-height: 1.6; letter-spacing: 0.5px;
         }
         .auth-hint strong { color: rgba(255,255,255,0.45); }
+        .auth-btn {
+            width: 100%; padding: 15px 24px;
+            background: linear-gradient(135deg, #1a9fff, #0d7ed6);
+            border: none; border-radius: 14px;
+            color: #fff; font-size: 1.05rem; font-weight: 600;
+            cursor: pointer; letter-spacing: 3px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(26,159,255,0.3);
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; margin-bottom: 20px;
+        }
+        .auth-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 28px rgba(26,159,255,0.4);
+        }
+        .auth-btn:active { transform: scale(0.97); }
+        .auth-btn:disabled {
+            opacity: 0.5; cursor: not-allowed; transform: none;
+            box-shadow: none;
+        }
+        .auth-btn.success {
+            background: linear-gradient(135deg, #2ea043, #238636);
+            box-shadow: 0 4px 20px rgba(46,160,67,0.3);
+        }
+        .auth-btn.denied {
+            background: linear-gradient(135deg, #e5534b, #c93c37);
+            box-shadow: 0 4px 20px rgba(229,83,75,0.3);
+        }
     </style>
 </head>
 <body>
@@ -904,13 +932,12 @@
                 </svg>
             </div>
             <h2 class="auth-title">Steam 启航</h2>
-            <p class="auth-status" id="authStatus"><span class="auth-spinner"></span>正在生成连接码...</p>
-            <div class="auth-code-box">
-                <p class="auth-code-label">连接码</p>
-                <p class="auth-code" id="authCode">------</p>
-            </div>
-            <div class="auth-qr" id="authQR"></div>
-            <p class="auth-hint">打开 <strong>Steam 启航 App</strong>，输入上方连接码<br>或扫描二维码授权访问</p>
+            <p class="auth-status" id="authStatus">访问需要手机授权</p>
+            <button class="auth-btn" id="authBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+                发起访问申请
+            </button>
+            <p class="auth-hint">请确保手机上已打开 <strong>Steam 启航 App</strong></p>
         </div>
     </div>
 
@@ -1183,62 +1210,99 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        /* ============ P2P AUTH GATE ============ */
+        /* ============ P2P AUTH GATE - One-Click Request ============ */
         (function() {
             const overlay = document.getElementById('authOverlay');
             const statusEl = document.getElementById('authStatus');
-            const codeEl = document.getElementById('authCode');
-            const qrEl = document.getElementById('authQR');
+            const btnEl = document.getElementById('authBtn');
+            const hintEl = document.querySelector('.auth-hint');
 
-            function uid6() {
-                const c = '0123456789';
-                let s = '';
-                for (let i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)];
-                return s;
-            }
+            const APP_PEER_ID = 'steam-ship-app';
+            let peer = null;
+            let unlocked = false;
+            let requesting = false;
 
-            const code = uid6();
-            const peerId = 'steam-ship-' + code;
-            codeEl.textContent = code;
-
-            // QR code via goQR API
-            var qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=26-159-255&bgcolor=22-27-34&data=' + encodeURIComponent(peerId);
-            qrEl.innerHTML = '<img src="' + qrSrc + '" alt="QR" width="180" height="180" onerror="this.style.display=\'none\'">';
-
-            var peer;
-            var unlocked = false;
-
-            function setStatus(html, color) {
-                statusEl.innerHTML = html;
+            function setStatus(msg, color) {
+                statusEl.textContent = msg;
                 if (color) statusEl.style.color = color;
             }
 
-            function tryInit() {
-                peer = new Peer(peerId);
-                var retried = false;
+            function resetBtn() {
+                btnEl.disabled = false;
+                btnEl.className = 'auth-btn';
+                btnEl.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>发起访问申请';
+            }
 
-                peer.on('open', function() {
-                    setStatus('等待 App 授权...');
+            function doUnlock() {
+                unlocked = true;
+                btnEl.className = 'auth-btn success';
+                btnEl.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>授权成功';
+                btnEl.disabled = true;
+                setStatus('授权成功，正在进入...', '#2ea043');
+                hintEl.textContent = '授权已通过，即将进入页面';
+                overlay.style.opacity = '0';
+                overlay.style.pointerEvents = 'none';
+                overlay.style.transition = 'opacity 0.5s ease';
+                setTimeout(function() {
+                    overlay.remove();
+                    if (peer && !peer.destroyed) peer.destroy();
+                }, 500);
+            }
+
+            function requestAuth() {
+                if (requesting || unlocked) return;
+                requesting = true;
+                btnEl.disabled = true;
+                btnEl.innerHTML = '<span class="auth-spinner"></span>正在申请...';
+                setStatus('正在连接手机 App...');
+
+                // Connect to the fixed App peer ID
+                const conn = peer.connect(APP_PEER_ID, { reliable: true });
+
+                conn.on('open', function() {
+                    setStatus('已连接到 App，等待确认...', '#1a9fff');
+                    hintEl.textContent = '请在手机上点击「允许」或「拒绝」';
                 });
 
-                peer.on('connection', function(conn) {
-                    setStatus('<span class="auth-spinner"></span>已连接，等待确认...', '#1a9fff');
-                    conn.on('data', function(data) {
-                        if (data === 'allow') {
-                            setStatus('授权成功，正在进入...', '#2ea043');
-                            setTimeout(doUnlock, 500);
-                        } else if (data === 'deny') {
-                            setStatus('访问被拒绝', '#e5534b');
-                            var hint = document.querySelector('.auth-hint');
-                            if (hint) hint.textContent = '授权被拒绝，请刷新页面重试';
-                        }
-                    });
-                    conn.on('close', function() {
-                        if (!unlocked) setStatus('连接已断开，等待重新授权...', '');
-                    });
-                    conn.on('error', function() {
-                        if (!unlocked) setStatus('连接异常，等待重新授权...', '#e5534b');
-                    });
+                conn.on('data', function(data) {
+                    if (data === 'allow') {
+                        doUnlock();
+                    } else if (data === 'deny') {
+                        requesting = false;
+                        setStatus('访问被拒绝', '#e5534b');
+                        btnEl.className = 'auth-btn denied';
+                        btnEl.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>已被拒绝';
+                        hintEl.textContent = '授权被拒绝，可再次发起申请';
+                        setTimeout(resetBtn, 3000);
+                    }
+                });
+
+                conn.on('close', function() {
+                    if (!unlocked) {
+                        requesting = false;
+                        setStatus('连接已断开', '');
+                        hintEl.textContent = 'App 连接已断开，请确保 App 保持打开状态';
+                        resetBtn();
+                    }
+                });
+
+                conn.on('error', function(err) {
+                    requesting = false;
+                    setStatus('连接失败：' + (err.message || '无法连接'), '#e5534b');
+                    hintEl.textContent = '请确保手机上已打开 App 并保持在前台';
+                    resetBtn();
+                });
+            }
+
+            // Init PeerJS with random ID
+            function tryInit() {
+                const randomId = 'steam-web-' + Math.random().toString(36).substr(2, 8);
+                peer = new Peer(randomId);
+                let retried = false;
+
+                peer.on('open', function() {
+                    setStatus('访问需要手机授权');
+                    btnEl.disabled = false;
                 });
 
                 peer.on('error', function(err) {
@@ -1246,31 +1310,23 @@
                         retried = true;
                         peer.destroy();
                         setTimeout(tryInit, 2000);
-                        setStatus('<span class="auth-spinner"></span>正在重连...');
+                        setStatus('正在重连服务...');
                         return;
                     }
-                    setStatus('连接服务异常，请刷新页面重试', '#e5534b');
+                    setStatus('服务连接异常，请刷新页面', '#e5534b');
                 });
 
                 peer.on('disconnected', function() {
                     if (!unlocked && peer && !peer.destroyed) {
-                        setStatus('<span class="auth-spinner"></span>正在重连...');
                         peer.reconnect();
                     }
                 });
             }
 
-            function doUnlock() {
-                unlocked = true;
-                overlay.style.opacity = '0';
-                overlay.style.pointerEvents = 'none';
-                overlay.style.transition = 'opacity 0.4s ease';
-                setTimeout(function() {
-                    overlay.remove();
-                    if (peer && !peer.destroyed) peer.destroy();
-                }, 400);
-            }
+            // Click handler
+            btnEl.addEventListener('click', requestAuth);
 
+            // Init
             tryInit();
         })();
     </script>
