@@ -793,9 +793,138 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ============ PASSWORD OVERLAY ============ */
+        .pw-overlay {
+            position: fixed; inset: 0; z-index: 99999;
+            background: linear-gradient(135deg, #0a0e17 0%, #111827 40%, #0d1117 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        .pw-overlay::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(26,159,255,0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 40%, rgba(26,159,255,0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 20% 80%, rgba(13,126,214,0.06) 0%, transparent 50%);
+        }
+        .pw-grid {
+            position: absolute; inset: 0; opacity: 0.03;
+            background-image: linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        .pw-card {
+            position: relative; z-index: 1;
+            background: rgba(22,27,34,0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 48px 44px 40px;
+            max-width: 420px; width: 90%;
+            text-align: center;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.5), 0 0 80px rgba(26,159,255,0.04);
+            animation: pwCardIn 0.8s ease-out;
+        }
+        @keyframes pwCardIn {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .pw-logo {
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+        .pw-logo svg { width: 56px; height: 56px; }
+        .pw-title {
+            font-size: 1.5rem; font-weight: 700; color: #e6edf3;
+            margin-bottom: 6px; letter-spacing: 2px;
+        }
+        .pw-subtitle {
+            font-size: 0.85rem; color: rgba(255,255,255,0.35);
+            margin-bottom: 28px; letter-spacing: 4px; text-transform: uppercase;
+        }
+        .pw-input-group {
+            position: relative; margin-bottom: 20px;
+        }
+        .pw-input-group input {
+            width: 100%; padding: 14px 18px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px;
+            color: #fff; font-size: 1.05rem;
+            outline: none; text-align: center; letter-spacing: 6px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        .pw-input-group input::placeholder {
+            color: rgba(255,255,255,0.2); letter-spacing: 2px;
+        }
+        .pw-input-group input:focus {
+            border-color: #1a9fff;
+            box-shadow: 0 0 0 3px rgba(26,159,255,0.15), 0 0 24px rgba(26,159,255,0.08);
+            background: rgba(255,255,255,0.06);
+        }
+        .pw-input-group.shake input {
+            animation: pwShake 0.5s ease;
+            border-color: #e5534b;
+            box-shadow: 0 0 0 3px rgba(229,83,75,0.2);
+        }
+        @keyframes pwShake {
+            0%,100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+        .pw-error {
+            color: #e5534b; font-size: 0.82rem;
+            margin-top: 8px; opacity: 0; transition: opacity 0.3s;
+            letter-spacing: 1px;
+        }
+        .pw-error.show { opacity: 1; }
+        .pw-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #1a9fff, #0d7ed6);
+            border: none; border-radius: 12px;
+            color: #fff; font-size: 1rem; font-weight: 600;
+            cursor: pointer; letter-spacing: 3px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(26,159,255,0.25);
+        }
+        .pw-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(26,159,255,0.35);
+        }
+        .pw-btn:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
+
+    <!-- ==================== PASSWORD GATE ==================== -->
+    <div class="pw-overlay" id="pwOverlay">
+        <div class="pw-grid"></div>
+        <div class="pw-card">
+            <div class="pw-logo">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs><linearGradient id="pwg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a9fff"/><stop offset="100%" stop-color="#0d7ed6"/></linearGradient><linearGradient id="pwb" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fff" stop-opacity="0.9"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+                    <circle cx="100" cy="100" r="88" fill="url(#pwg)"/>
+                    <rect x="48" y="42" width="36" height="116" rx="4" fill="#fff"/>
+                    <polygon points="118,42 156,58 156,158 118,158" fill="#fff" opacity="0.85"/>
+                    <polygon points="88,58 136,58 156,142 88,142" fill="url(#pwb)" opacity="0.5"/>
+                    <rect x="44" y="36" width="116" height="12" rx="3" fill="#fff"/>
+                    <rect x="44" y="152" width="76" height="10" rx="3" fill="#fff"/>
+                    <circle cx="100" cy="28" r="5" fill="#fff" opacity="0.7"/>
+                </svg>
+            </div>
+            <h2 class="pw-title">Steam 启航</h2>
+            <p class="pw-subtitle">Please Enter Password</p>
+            <div class="pw-input-group" id="pwInputGroup">
+                <input type="password" id="pwInput" placeholder="输入访问密码" maxlength="20" autocomplete="off" autofocus>
+            </div>
+            <p class="pw-error" id="pwError">密码错误，请重试</p>
+            <button class="pw-btn" id="pwBtn">进 入</button>
+        </div>
+    </div>
 
     <!-- ==================== NAVBAR ==================== -->
     <nav class="navbar">
@@ -1064,6 +1193,40 @@
         backToTop.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+
+        /* ============ PASSWORD GATE ============ */
+        (function() {
+            const CORRECT_PW = '1723662167';
+            const overlay = document.getElementById('pwOverlay');
+            const input = document.getElementById('pwInput');
+            const btn = document.getElementById('pwBtn');
+            const error = document.getElementById('pwError');
+            const group = document.getElementById('pwInputGroup');
+
+            function tryUnlock() {
+                const val = input.value.trim();
+                if (val === CORRECT_PW) {
+                    overlay.style.opacity = '0';
+                    overlay.style.pointerEvents = 'none';
+                    overlay.style.transition = 'opacity 0.4s ease';
+                    setTimeout(function() { overlay.remove(); }, 400);
+                } else {
+                    group.classList.add('shake');
+                    error.classList.add('show');
+                    input.value = '';
+                    input.focus();
+                    setTimeout(function() {
+                        group.classList.remove('shake');
+                        error.classList.remove('show');
+                    }, 2000);
+                }
+            }
+
+            btn.addEventListener('click', tryUnlock);
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') tryUnlock();
+            });
+        })();
     </script>
 
 </body>
